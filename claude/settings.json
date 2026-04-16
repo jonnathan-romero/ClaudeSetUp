@@ -9,6 +9,8 @@
       "NotebookEdit",
       "WebFetch",
       "WebSearch",
+      "Bash(cp *)",
+      "Bash(git -C *)",
       "Bash(git status *)",
       "Bash(git status)",
       "Bash(git diff *)",
@@ -32,6 +34,8 @@
       "Bash(git remote)",
       "Bash(git tag *)",
       "Bash(git tag)",
+      "Bash(git add *)",
+      "Bash(git add)",
       "Bash(pytest *)",
       "Bash(pytest)",
       "Bash(uv run *)",
@@ -45,12 +49,16 @@
       "Bash(uv python *)",
       "Bash(python *)",
       "Bash(python)",
+      "Bash(python -c *)",
+      "Bash(python3 *)",
+      "Bash(python3)",
       "Bash(ls *)",
       "Bash(ls)",
       "Bash(cat *)",
       "Bash(head *)",
       "Bash(tail *)",
       "Bash(wc *)",
+      "Bash(wc)",
       "Bash(diff *)",
       "Bash(mkdir *)",
       "Bash(echo *)",
@@ -59,65 +67,22 @@
       "Bash(env)",
       "Bash(pwd)",
       "Bash(pwd *)",
-      "Bash(python3)",
-      "Bash(python3 *)",
       "Bash(.venv/bin/python3)",
       "Bash(.venv/bin/python3 *)",
       "Bash(sed)",
       "Bash(sed *)",
+      "Bash(rm *)",
+      "Bash(rm)",
+      "Bash(sshpass *)",
+      "Bash(curl *)",
+      "Bash(ssh *)"
     ],
     "deny": [
       "Bash(git push *)",
       "Bash(git push)",
-      "Bash(git commit *)",
-      "Bash(git commit)",
       "Bash(uv add *)",
       "Bash(uv remove *)",
       "Bash(pip *)"
-    ],
-    "additionalDirectories": [
-      "/home/jonn/Documents/Code"
     ]
-  },
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r '.tool_response.filePath // .tool_input.file_path' | { read -r f; echo \"$f\" | grep -qE '\\.py$' && uv run black --quiet \"$f\"; } 2>/dev/null || true",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
-  },
-  "enabledPlugins": {
-    "voltagent-core-dev@voltagent-subagents": true,
-    "voltagent-lang@voltagent-subagents": true,
-    "voltagent-infra@voltagent-subagents": true,
-    "voltagent-qa-sec@voltagent-subagents": true,
-    "voltagent-data-ai@voltagent-subagents": true,
-    "voltagent-dev-exp@voltagent-subagents": true,
-    "voltagent-domains@voltagent-subagents": true,
-    "voltagent-biz@voltagent-subagents": true,
-    "voltagent-meta@voltagent-subagents": true,
-    "voltagent-research@voltagent-subagents": true
-  },
-  "extraKnownMarketplaces": {
-    "claude-plugins-official": {
-      "source": {
-        "source": "github",
-        "repo": "anthropics/claude-plugins-official"
-      }
-    },
-    "voltagent-subagents": {
-      "source": {
-        "source": "github",
-        "repo": "VoltAgent/awesome-claude-code-subagents"
-      }
-    }
-  },
-  "promptSuggestionEnabled": true
+  }
 }

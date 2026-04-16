@@ -1,0 +1,25 @@
+# plugin@marketplace
+voltagent-core-dev@voltagent-subagents
+voltagent-lang@voltagent-subagents
+voltagent-infra@voltagent-subagents
+voltagent-qa-sec@voltagent-subagents
+voltagent-data-ai@voltagent-subagents
+voltagent-dev-exp@voltagent-subagents
+voltagent-domains@voltagent-subagents
+voltagent-biz@voltagent-subagents
+voltagent-meta@voltagent-subagents
+voltagent-research@voltagent-subagents
+engineering-skills@claude-code-skills
+engineering-advanced-skills@claude-code-skills
+product-skills@claude-code-skills
+marketing-skills@claude-code-skills
+ra-qm-skills@claude-code-skills
+pm-skills@claude-code-skills
+c-level-skills@claude-code-skills
+business-growth-skills@claude-code-skills
+finance-skills@claude-code-skills
+code-review@claude-plugins-official
+code-simplifier@claude-plugins-official
+skill-creator@claude-plugins-official
+data-engineering@claude-plugins-official
+data@claude-plugins-official
