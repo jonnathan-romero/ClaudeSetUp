@@ -36,6 +36,8 @@
       "Bash(git tag)",
       "Bash(git add *)",
       "Bash(git add)",
+      "Bash(git commit *)",
+      "Bash(git commit)",
       "Bash(pytest *)",
       "Bash(pytest)",
       "Bash(uv run *)",
@@ -75,7 +77,8 @@
       "Bash(rm)",
       "Bash(sshpass *)",
       "Bash(curl *)",
-      "Bash(ssh *)"
+      "Bash(ssh *)",
+      "Bash(scp *)"
     ],
     "deny": [
       "Bash(git push *)",

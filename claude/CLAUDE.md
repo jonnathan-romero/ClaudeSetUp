@@ -27,12 +27,6 @@
 - For multi-step tasks, state a brief plan: step → verify for each.
 - For large implementations, suggest phased multi-agent approaches (competitive, collaborative, or mixed). Use separate branches for parallel agent work.
 
-## Workflow
-- Show commits, pushes, and dependency changes for review before executing.
-
-## Bash
-- Never use multi-line quoted strings in bash commands (e.g., `python -c "..."`). Write temporary `.py` script files instead to avoid the "quoted newline" security prompt.
-
 ## Python
 - Python 3.12+, `uv` only (never pip, conda, poetry)
 - Google-style docstrings
@@ -43,4 +37,3 @@
 - Empty `__init__.py` files (no import code)
 - Config-ready: parameters with sensible defaults, no config models
 - pytest for testing. Write throwaway test scripts during implementation as needed.
-- Black auto-formats on save (hook) — don't run manually
