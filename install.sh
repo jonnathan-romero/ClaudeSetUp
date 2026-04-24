@@ -84,6 +84,16 @@ if [ -f "$SCRIPT_DIR/plugins.txt" ]; then
         log "  $plugin"
         claude plugin install "$plugin" 2>/dev/null || log "    (already installed or failed)"
     done
+
+    # Enable plugins in settings.json (merge into existing enabledPlugins)
+    log "Enabling plugins in settings.json..."
+    ENABLED_JSON=$(grep -v '^\s*#' "$SCRIPT_DIR/plugins.txt" | grep -v '^\s*$' \
+        | jq -R -s 'split("\n") | map(select(length > 0)) | map({(.): true}) | add // {}')
+    TMP="$(mktemp)"
+    jq --argjson enabled "$ENABLED_JSON" \
+        '.enabledPlugins = ((.enabledPlugins // {}) + $enabled)' \
+        "$CLAUDE_DIR/settings.json" > "$TMP"
+    mv "$TMP" "$CLAUDE_DIR/settings.json"
 fi
 
 log "Done!"
