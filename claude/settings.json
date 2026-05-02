@@ -79,7 +79,9 @@
       "Bash(curl *)",
       "Bash(ssh *)",
       "Bash(scp *)",
-      "Bash(gh search * )"
+      "Bash(gh search * )",
+      "Bash(agent-browser *)",
+      "Bash(agent-browser)"
     ],
     "deny": [
       "Bash(git push *)",
