@@ -86,11 +86,12 @@
       "Bash(git push)",
       "Bash(uv add *)",
       "Bash(uv remove *)",
-      "Bash(pip *)"
+      "Bash(pip *)",
+      "Bash(sudo *)"
     ]
   },
   "statusLine": {
     "type": "command",
-    "command": "bash -c 'input=$(cat); cwd=$(echo \"$input\" | jq -r \".workspace.current_dir // .cwd\"); name=$(basename \"$cwd\"); model=$(echo \"$input\" | jq -r \".model.display_name // empty\"); used=$(echo \"$input\" | jq -r \".context_window.used_percentage // empty\"); printf \"\\033[1;32m[$(whoami)@$(hostname -s) %s]\\033[0m\" \"$name\"; [ -n \"$model\" ] && printf \" \\033[0;36m%s\\033[0m\" \"$model\"; [ -n \"$used\" ] && printf \" \\033[0;33mctx:%.0f%%\\033[0m\" \"$used\"'"
+    "command": "bash -c 'input=$(cat); mapfile -t arr < <(echo \"$input\" | jq -r \"def fmt: if . >= 1000000 then \\\"\\(./1000000|floor)M\\\" elif . >= 1000 then \\\"\\(./1000|floor)K\\\" else tostring end; (.workspace.current_dir // .cwd), (.model.display_name // \\\"\\\"), ((.context_window.current_usage // {}) as \\$u | ((\\$u.input_tokens // 0) + (\\$u.cache_creation_input_tokens // 0) + (\\$u.cache_read_input_tokens // 0)) | fmt), ((.context_window.context_window_size // 0) | fmt), (.context_window.used_percentage // 0 | floor | tostring)\"); cwd=\"${arr[0]}\"; model=\"${arr[1]}\"; used_t=\"${arr[2]}\"; total_t=\"${arr[3]}\"; pct=\"${arr[4]}\"; name=$(basename \"$cwd\"); printf \"\\033[1;32m[$(whoami)@$(hostname -s) %s]\\033[0m\" \"$name\"; [ -n \"$model\" ] && printf \" \\033[0;36m%s\\033[0m\" \"$model\"; [ \"$total_t\" != \"0\" ] && printf \" \\033[0;33mctx: %s/%s (%s%%)\\033[0m\" \"$used_t\" \"$total_t\" \"$pct\"'"
   }
 }
