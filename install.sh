@@ -9,27 +9,31 @@ MAX_BACKUPS=30
 
 log() { printf '[install] %s\n' "$1"; }
 
+# --- Prune old backups beyond $MAX_BACKUPS (before adding today's) ---
+if [ -d "$BACKUP_BASE" ]; then
+    backup_count=$(find "$BACKUP_BASE" -mindepth 1 -maxdepth 1 -type d | wc -l)
+    # Leave room for today's backup if we're about to create one
+    keep=$(( MAX_BACKUPS - 1 ))
+    if [ "$backup_count" -gt "$keep" ]; then
+        find "$BACKUP_BASE" -mindepth 1 -maxdepth 1 -type d | sort | head -n $(( backup_count - keep )) | while read -r old; do
+            rm -rf "$old"
+            log "Pruned old backup: $(basename "$old")"
+        done
+    fi
+fi
+
 # --- Backup ~/.claude once per day ---
-if [ -d "$CLAUDE_DIR" ] && [ ! -d "$BACKUP_DIR" ]; then
+if [ ! -d "$CLAUDE_DIR" ]; then
+    log "No existing ~/.claude — nothing to back up"
+elif [ -d "$BACKUP_DIR" ]; then
+    log "Backup already exists for today (skipping)"
+else
     mkdir -p "$BACKUP_DIR"
     # Back up only the files we manage (not sessions, cache, history, etc.)
     for item in CLAUDE.md settings.json skills keybindings.json statusline-command.sh; do
         [ -e "$CLAUDE_DIR/$item" ] && cp -r "$CLAUDE_DIR/$item" "$BACKUP_DIR/"
     done
     log "Backed up managed files to $BACKUP_DIR"
-else
-    log "Backup already exists for today (skipping)"
-fi
-
-# --- Prune old backups beyond $MAX_BACKUPS ---
-if [ -d "$BACKUP_BASE" ]; then
-    backup_count=$(find "$BACKUP_BASE" -mindepth 1 -maxdepth 1 -type d | wc -l)
-    if [ "$backup_count" -gt "$MAX_BACKUPS" ]; then
-        find "$BACKUP_BASE" -mindepth 1 -maxdepth 1 -type d | sort | head -n $(( backup_count - MAX_BACKUPS )) | while read -r old; do
-            rm -rf "$old"
-            log "Pruned old backup: $(basename "$old")"
-        done
-    fi
 fi
 
 # --- Sync claude/ directory into ~/.claude/ ---
@@ -49,15 +53,15 @@ if [ -f "$SCRIPT_DIR/claude/settings.json" ]; then
     fi
 fi
 
-# Everything else: straight copy
-find "$SCRIPT_DIR/claude" -mindepth 1 -not -name "settings.json" -not -path "*/settings.json" | while read -r src; do
+# Everything else: straight copy (preserve mode so executables stay executable)
+find "$SCRIPT_DIR/claude" -mindepth 1 -not -name "settings.json" | while read -r src; do
     rel="${src#$SCRIPT_DIR/claude/}"
     dest="$CLAUDE_DIR/$rel"
     if [ -d "$src" ]; then
         mkdir -p "$dest"
     else
         mkdir -p "$(dirname "$dest")"
-        cp -f "$src" "$dest"
+        cp -fp "$src" "$dest"
         log "Installed $rel"
     fi
 done
@@ -69,11 +73,19 @@ if ! command -v claude &>/dev/null; then
 fi
 
 # Register marketplaces from marketplaces.txt
+# Format: name=owner/repo. The `name` is informational (the marketplace's
+# self-declared identifier in its .claude-plugin manifest is what plugins.txt
+# must reference); we only pass `repo` to the CLI.
 if [ -f "$SCRIPT_DIR/marketplaces.txt" ]; then
     log "Registering marketplaces..."
     grep -v '^\s*#' "$SCRIPT_DIR/marketplaces.txt" | grep -v '^\s*$' | while IFS='=' read -r name repo; do
         log "  $name ($repo)"
-        claude plugin marketplace add "$name" --source github --repo "$repo" 2>/dev/null || true
+        if ! out=$(claude plugin marketplace add "$repo" 2>&1); then
+            case "$out" in
+                *already*) ;;
+                *) log "    WARNING: $out" ;;
+            esac
+        fi
     done
 fi
 
@@ -82,7 +94,12 @@ if [ -f "$SCRIPT_DIR/plugins.txt" ]; then
     log "Installing plugins..."
     grep -v '^\s*#' "$SCRIPT_DIR/plugins.txt" | grep -v '^\s*$' | while read -r plugin; do
         log "  $plugin"
-        claude plugin install "$plugin" 2>/dev/null || log "    (already installed or failed)"
+        if ! out=$(claude plugin install "$plugin" 2>&1); then
+            case "$out" in
+                *already*) log "    (already installed)" ;;
+                *) log "    WARNING: $out" ;;
+            esac
+        fi
     done
 
     # Enable plugins in settings.json (merge into existing enabledPlugins)
