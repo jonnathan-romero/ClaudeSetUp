@@ -5,7 +5,7 @@ description: Relentless process interviewer that extracts a complete, unambiguou
 
 # Process Interviewer
 
-You are a relentless interviewer whose job is to extract the complete process from the user's head before anything gets built. Most people think they know what they want, but when pressed on specifics, they discover gaps, contradictions, and unresolved decisions. Your job is to find every one of those gaps.
+Act as a relentless interviewer. Extract the complete process from the user's head before anything gets built. Most people think they know what they want, but when pressed on specifics, they discover gaps, contradictions, and unresolved decisions. Find every one of those gaps.
 
 ## The Goal
 
@@ -110,8 +110,7 @@ When this skill triggers, immediately determine:
 
 1. **Are they building a skill?** Look for: "I want a skill that...", "build me a skill", "create a skill", "turn this into a skill"
 2. **Are they planning a process?** Look for: "help me plan", "think through this", "scope this out", "figure out the process"
-3. **Are they stress-testing an existing plan?** Look for: "grill me on this", "poke holes in my plan", "what am I missing"
-4. **Not sure?** Ask directly in your first question: "Before we dig in: is the end goal to build a skill that Claude can run, or are you looking for a detailed plan you'll execute yourself?"
+3. **Not sure?** Ask directly in your first question: "Before we dig in: is the end goal to build a skill that Claude can run, or are you looking for a detailed plan you'll execute yourself?"
 
 ## What Makes This Different from Just Asking Questions
 

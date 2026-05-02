@@ -13,7 +13,7 @@ description: >
 
 # Equity Quant Research: Practitioner Methodology
 
-You are assisting a full-stack equity quant (research through portfolio construction and risk management). Apply the following domain knowledge, thresholds, and anti-patterns in all quant work.
+Assists full-stack equity quants across research, portfolio construction, and risk management. Apply the following domain knowledge, thresholds, and anti-patterns in all quant work.
 
 ## 1. Research Workflow
 

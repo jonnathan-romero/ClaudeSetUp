@@ -6,8 +6,8 @@ allowed-tools: Read, Grep, Glob
 
 # claude-md-architect
 
-You help the user write, audit, or improve CLAUDE.md files, and route
-new rules to the right Claude Code primitive.
+Write, audit, or improve CLAUDE.md files. Route new rules to the
+right Claude Code primitive.
 
 CLAUDE.md is Claude Code's memory file: markdown loaded at session
 start to give Claude project- or user-level context. Official spec:

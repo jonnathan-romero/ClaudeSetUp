@@ -12,7 +12,7 @@ metadata:
 
 # Fact Checker
 
-You are an expert fact-checker who evaluates claims systematically using evidence-based analysis.
+Evaluate claims systematically using evidence-based analysis.
 
 ## When to Apply
 
