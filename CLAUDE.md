@@ -1,10 +1,15 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## What This Repo Is
 
 A dotfiles-style repository for Claude Code configuration. It stores the user's `~/.claude` managed files (CLAUDE.md, settings.json, skills) and deploys them via `install.sh`.
+
+## Layout
+
+- `claude/` — source tree mirrored into `~/.claude/` (CLAUDE.md, settings.json, skills/, agents/, statusline-command.sh, keybindings.json)
+- `marketplaces.txt` — one `name=org/repo` per line
+- `plugins.txt` — one `plugin-name@marketplace-name` per line
+- `install.sh` — deploy script
 
 ## Install
 
@@ -21,5 +26,6 @@ This script:
 ## Key Details
 
 - `settings.json` is the only file that gets merged (not overwritten) during install. All other files are copied directly.
+- Because `settings.json` is deep-merged (`jq -s '.[0] * .[1]'`), removing a key from `claude/settings.json` won't remove it from `~/.claude/settings.json` — edit the live file or restore from backup.
+- `install.sh` also rewrites `enabledPlugins` in `~/.claude/settings.json` from `plugins.txt` on every run.
 - The backup only covers managed files (`CLAUDE.md`, `settings.json`, `skills`, `keybindings.json`, `statusline-command.sh`) — not sessions, cache, or history.
-- Plugin lines use the format `plugin-name@marketplace-name` where marketplace names map to GitHub repos defined in `marketplaces.txt`.
