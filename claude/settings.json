@@ -78,7 +78,8 @@
       "Bash(sshpass *)",
       "Bash(curl *)",
       "Bash(ssh *)",
-      "Bash(scp *)"
+      "Bash(scp *)",
+      "Bash(gh search * )"
     ],
     "deny": [
       "Bash(git push *)",
