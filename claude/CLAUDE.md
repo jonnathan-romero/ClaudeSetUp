@@ -35,5 +35,4 @@
 - Direct imports only — no try/except guards or `_HAS_X` flags
 - Minimal comments: only for tricky logic, TODOs, assumptions, or non-obvious design choices
 - Empty `__init__.py` files (no import code)
-- Config-ready: parameters with sensible defaults, no config models
 - pytest for testing. Write throwaway test scripts during implementation as needed.
