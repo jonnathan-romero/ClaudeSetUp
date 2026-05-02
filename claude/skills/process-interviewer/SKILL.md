@@ -1,6 +1,6 @@
 ---
 name: process-interviewer
-description: Relentless process interviewer that extracts a complete, unambiguous plan from the user's head before any building begins. Use when the user wants to plan a complex task, design a process, build a skill, create a workflow, scope a project, or says things like "I want to build", "let's plan", "help me think through", "I have an idea for", "scope this out", "interview me", "help me figure out the process", "I need a skill that", or any variation where the user has a fuzzy idea that needs to be sharpened into a concrete plan. If the user's goal is to build a skill, this interviewer will automatically create it after the interview is complete. ALWAYS use this skill before jumping into building anything complex. Even if the user seems confident, the interview reveals gaps they didn't know they had. Do NOT use to critique an already-formed plan — use grill-me for open-ended pressure-testing.
+description: Relentless process interviewer that extracts a complete, unambiguous plan from the user's head before any building begins. Use when the user wants to plan a complex task, design a process, build a skill, create a workflow, scope a project, or says things like "I want to build", "let's plan", "help me think through", "I have an idea for", "scope this out", "interview me", "help me figure out the process", "I need a skill that", or any variation where the user has a fuzzy idea that needs to be sharpened into a concrete plan. ALWAYS use this skill before jumping into building anything complex. Even if the user seems confident, the interview reveals gaps they didn't know they had. Do NOT use to critique an already-formed plan — use grill-me for open-ended pressure-testing.
 ---
 
 # Process Interviewer
@@ -86,7 +86,7 @@ Then ask: "What did I get wrong? What's missing?" This almost always surfaces 1-
 
 Based on whether the user wants a skill or just a plan:
 
-**If building a skill:** Read `references/skill-output-template.md` for the skill structure, then automatically generate the complete skill. Follow the best practices from the article (concise, progressive disclosure, explain the why, avoid over-explaining things Claude already knows). Create the SKILL.md and any necessary reference files. Save them to the workspace.
+**If building a skill:** Read `references/skill-output-template.md` and produce a skill spec — frontmatter draft, structure outline, key behaviors, edge cases — and save it to the workspace. Do NOT generate the SKILL.md yourself; hand the spec to `skill-best-practices` and `skill-creator`, which together supply the quality bar and run the build/eval workflow.
 
 **If just planning:** Read `references/plan-output-template.md` and produce a detailed plan document. Save it to the workspace.
 
