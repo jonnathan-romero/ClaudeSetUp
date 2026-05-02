@@ -1,6 +1,9 @@
 ---
 name: matplotlib-plot-style
 description: Apply the user's matplotlib plot styling preferences whenever writing plotting code. ALWAYS use this skill when generating matplotlib charts, figures, plots, or visualizations. Trigger on any code that imports matplotlib, creates figures, or plots data — even if the user doesn't explicitly mention styling.
+paths:
+  - "**/*.py"
+  - "**/*.ipynb"
 ---
 
 # Matplotlib Plot Style

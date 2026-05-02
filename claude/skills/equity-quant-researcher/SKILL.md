@@ -8,7 +8,7 @@ description: >
   walk-forward validation, look-ahead bias, signal decay, turnover, equity quant, hedge fund,
   long-short, dollar-neutral, CVaR, drawdown, rebalance, factor exposure, cross-sectional,
   panel data, momentum, value factor, quality factor, short interest, Fama-French, Barra,
-  backtest, signal evaluation, transaction costs, market impact, or quant finance.
+  backtest, signal evaluation, transaction costs, market impact, or quant finance. Do NOT use for generic ML/data science, general risk operations outside an alpha-hypothesis context, or portfolio rebalancing without signal evaluation.
 ---
 
 # Equity Quant Research: Practitioner Methodology
