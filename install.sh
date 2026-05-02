@@ -57,7 +57,7 @@ find "$SCRIPT_DIR/claude" -mindepth 1 -not -name "settings.json" -not -path "*/s
         mkdir -p "$dest"
     else
         mkdir -p "$(dirname "$dest")"
-        cp "$src" "$dest"
+        cp -f "$src" "$dest"
         log "Installed $rel"
     fi
 done
