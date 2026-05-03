@@ -22,6 +22,6 @@ voltagent-research@voltagent-subagents
 code-review@claude-plugins-official
 code-simplifier@claude-plugins-official
 skill-creator@claude-plugins-official
-data-engineering@claude-plugins-official
+# data-engineering@claude-plugins-official  # alias of data@claude-plugins-official (same upstream/SHA, just two marketplace names) — keeping `data` only to avoid duplicate skill registration.
 data@claude-plugins-official
 document-skills@anthropic-agent-skills
