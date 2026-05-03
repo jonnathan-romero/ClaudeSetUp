@@ -26,8 +26,8 @@ A bundle of Claude Code skills for agentic software engineering, organised aroun
 
 ## Artifacts the framework produces
 
-- **`CONTEXT.md`** — the project's domain glossary. Lazy-created by `/vibe-grill` when the first term is resolved.
-- **`docs/adr/`** — architectural decision records. Lazy-created by `/vibe-grill` when the first ADR is needed. ADRs are short — often a single paragraph.
+- **`CONTEXT.md`** — the project's domain glossary. Lazy-created and updated by `/vibe-grill` (primary) and `/vibe-architecture` (during architectural grilling) when terms get resolved.
+- **`docs/adr/`** — architectural decision records. Lazy-created by `/vibe-grill` or `/vibe-architecture` when the first ADR is needed. ADRs are short — often a single paragraph.
 - **`docs/agents/`** — per-repo configuration this framework consumes (issue tracker, triage labels, domain docs). Created by `/vibe-init`. Edit directly to customise.
 - **`.out-of-scope/`** — institutional memory of rejected feature requests, with reasoning. Created by `/vibe-issue-triage` when an enhancement is closed as `wontfix`.
 - **`.scratch/`** — only if you chose local-markdown for the issue tracker. Stores PRDs and issues as files: `.scratch/<feature>/PRD.md` and `.scratch/<feature>/issues/NN-slug.md`.

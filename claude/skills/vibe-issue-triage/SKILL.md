@@ -32,7 +32,7 @@ unlabeled → needs-triage → { needs-info, ready-for-agent, ready-for-human, w
 needs-info ─ reporter replies ─┘
 ```
 
-The canonical role names map to actual repo label strings via `docs/agents/triage-labels.md`. If that mapping doesn't exist, suggest the user run `/vibe-init` to create it; offer to proceed with default names if they want.
+The canonical role names map to actual repo label strings via `docs/agents/triage-labels.md`. If that mapping doesn't exist, proceed with the canonical role names as defaults.
 
 ## Mandatory AI disclaimer
 
@@ -43,10 +43,6 @@ The canonical role names map to actual repo label strings via `docs/agents/triag
 ```
 
 No exceptions. Maintainers and reporters need to know which comments came from the skill versus a human.
-
-## Bootstrap check
-
-If `CONTEXT.md`/`CONTEXT-MAP.md`, `docs/adr/`, AND `docs/agents/` are **all** absent, the framework isn't bootstrapped. Mention `/vibe-init` would set up the artifact contract; offer to proceed regardless using canonical defaults.
 
 ## Two flows
 

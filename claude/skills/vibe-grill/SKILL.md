@@ -27,9 +27,7 @@ Before grilling, learn how this repo is configured:
 - **`CONTEXT.md`** at the repo root, or **`CONTEXT-MAP.md`** if multi-context (read each `CONTEXT.md` relevant to the topic at hand).
 - **`docs/adr/`** — read ADRs that touch the area being discussed. In multi-context repos, also check `src/<context>/docs/adr/`.
 
-**If `CONTEXT.md`/`CONTEXT-MAP.md`, `docs/adr/`, AND `docs/agents/` are all absent**, the vibe-* framework isn't bootstrapped in this repo. Mention that running `/vibe-init` first would set up the artifact contract, then offer to proceed regardless. If the user proceeds, lazy-create files as you go (see below).
-
-If only some artifacts are missing, proceed silently — they'll be created lazily when needed.
+If any of these files don't exist, proceed silently — they'll be created lazily when needed (see below).
 
 ### 2. Walk the design tree
 

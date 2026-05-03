@@ -42,8 +42,6 @@ Prefer AFK where possible.
 
 If the user passes an issue reference (`#42`), fetch it using the conventions in `docs/agents/issue-tracker.md`. Otherwise, use the conversation context.
 
-If **all** of `CONTEXT.md`/`CONTEXT-MAP.md`, `docs/adr/`, AND `docs/agents/` are absent, mention that running `/vibe-init` would set up the framework, then offer to proceed regardless.
-
 ### 2. Explore the codebase (optional)
 
 Use the project's domain glossary (`CONTEXT.md`) and respect existing ADRs. Use the glossary's vocabulary in slice titles and descriptions.

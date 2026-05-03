@@ -24,7 +24,7 @@ Before drafting, learn how this repo is configured:
 - **`docs/agents/triage-labels.md`** — tells you the actual label string for the canonical `needs-triage` role.
 - **`docs/agents/domain.md`** if present — vocabulary discipline and ADR-conflict guidance applies to PRDs as well as to consumer skills.
 
-If **all** of `CONTEXT.md`/`CONTEXT-MAP.md`, `docs/adr/`, AND `docs/agents/` are absent, the vibe-* framework isn't bootstrapped. Mention that running `/vibe-init` would set up the artifact contract, then offer to proceed regardless. If they proceed, lazy-create artifacts as you go.
+If any of these files don't exist, proceed silently — they'll be created lazily when needed.
 
 ### 2. Explore the repo
 

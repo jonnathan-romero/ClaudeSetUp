@@ -9,8 +9,6 @@ A discipline for hard bugs. Skip phases only when explicitly justified.
 
 When exploring the codebase, use the project's domain glossary (`CONTEXT.md`) for a clear mental model of the relevant modules, and check ADRs in the area you're touching.
 
-If `CONTEXT.md`/`CONTEXT-MAP.md`, `docs/adr/`, AND `docs/agents/` are **all** absent, the framework isn't bootstrapped — mention `/vibe-init` would set up the artifact contract; offer to proceed regardless.
-
 ## Phase 1 — Build a feedback loop
 
 **This is the skill.** Everything else is mechanical. If you have a fast, deterministic, agent-runnable pass/fail signal for the bug, you will find the cause — bisection, hypothesis-testing, and instrumentation all just consume that signal. If you don't have one, no amount of staring at code will save you.
@@ -114,7 +112,7 @@ Required before declaring done:
 
 - [ ] Original repro no longer reproduces (re-run the Phase 1 loop)
 - [ ] Regression test passes (or absence of seam is documented)
-- [ ] **The full test suite passes**, not just the new regression test — agent fixes routinely break unrelated code that the new test doesn't cover (~29% of agent patches per published evals)
+- [ ] **The full test suite passes**, not just the new regression test — agent fixes routinely break unrelated code that the new test doesn't cover.
 - [ ] **The fix addresses the underlying invariant**, not just the user-visible symptom — articulate in one sentence: "the invariant `<X>` was being violated because `<Y>`; the fix restores it by `<Z>`." If you can't write that sentence, you've made the symptom go away without understanding the cause.
 - [ ] All `[DEBUG-...]` instrumentation removed (`grep` the prefix)
 - [ ] Throwaway prototypes deleted (or moved to a clearly-marked debug location)
