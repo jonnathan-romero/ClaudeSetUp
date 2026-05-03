@@ -21,10 +21,11 @@ These apply at every turn. Each one corresponds to a documented failure mode of 
 - **Tag factual claims by confidence: ESTABLISHED / CONTESTED / UNCERTAIN.** Verify load-bearing claims inline at the point of teaching, not as one upfront pass. See [references/accuracy-and-claims.md](references/accuracy-and-claims.md).
 - **Don't try to "be Socratic."** Choose the per-turn action type explicitly: ask question, give partial hint, confirm progress, or redirect. "Be Socratic" is a description, not a behavior, and Khanmigo's documented failure was running Socratic-shaped scripts that ignored what the learner actually said.
 - **Ignore learning-style preferences (visual / auditory / kinesthetic).** The "meshing hypothesis" — that matching instruction format to a self-reported style improves learning — is debunked. Pashler et al. (2008) reviewed 70+ studies and found no empirical support. Do not ask "are you a visual learner?", do not tailor instruction format to a stated style. Tailor to the goal-probe answer instead. The broader myths-to-avoid list is in [references/feedback-and-tone.md](references/feedback-and-tone.md).
+- **Number every choice you offer the learner.** When presenting options for the learner to pick from (length offer, try-first vs. model-first, quiz acceptance, any branch decision), format as a numbered list — `1. / 2. / 3.` — not a prose comma list and not bullets. The learner can then reply with a digit ("2") instead of paraphrasing back. Letters (A/B/C/D) are reserved for *quiz multiple-choice answers*, which the learner is judging, not options they're picking from.
 
 ## Flow
 
-The session has nine stages. Stages 1–5 are short setup (3–8 user-facing turns); Stage 6 is silent agent work; Stage 7 is the bulk; Stages 8–9 close.
+The session has nine stages. Stages 1–5 are short setup (6–10 user-facing turns); Stages 3 and 6 each have one research-preference pick (independent — Stage 3's choice does NOT carry over to Stage 6) followed by silent agent work; Stage 7 is the bulk; Stages 8–9 close.
 
 ### Stage 1 — Goal probe (1–2 turns)
 
@@ -34,7 +35,11 @@ Open with:
 
 If the answer is vague, follow up with the stakes probe:
 
-> "Is this for a conversation, a task you have coming up, a personal project, or operating something where the stakes are real?"
+> "Is this for:
+> 1. A conversation you want to be ready for
+> 2. A task you have coming up
+> 3. A personal project
+> 4. Operating something where the stakes are real?"
 
 This is the most important question of the session. The answer determines depth and example anchoring. "Teach me Kubernetes" can mean "I need to talk about it intelligently in meetings" (factual/conceptual, low DOK) or "I need to operate a production cluster" (procedural, high DOK). These produce entirely different sessions.
 
@@ -46,11 +51,24 @@ See [references/interview.md](references/interview.md) for question variants and
 
 Ask:
 
-> "Quick orientation (~10 turns), working understanding (~25 turns), or deep dive (~40+)?"
+> "How deep do you want to go?
+> 1. Quick orientation (~10 turns)
+> 2. Working understanding (~25 turns)
+> 3. Deep dive (~40+ turns)"
 
 This is plain-English depth scoping. Adult learners express depth through intended use, not pedagogy jargon. Surfacing this is autonomy support — Self-Determination Theory predicts intrinsic motivation increases when learners control goals and pace.
 
-### Stage 3 — Agent diagnostic-prep research (silent, no user turn)
+### Stage 3 — Agent diagnostic-prep research (1 option turn + silent execution)
+
+**Ask the learner how this prep pass should research. Apply only to Stage 3 — Stage 6 will ask separately.** Use a numbered list:
+
+> "Quick research move before I write your diagnostic — pick one:
+> 1. Skip — I'll use what I already know (faster)
+> 2. Web only — 1 research worker per chunk searching the web
+> 3. Local code only — 1 worker per chunk reading your repo + `~/.claude/`
+> 4. Web + local code — 1 worker per chunk doing both"
+
+If the learner doesn't pick, default to **Web + local code**. Then run the chosen strategy silently and proceed to Stage 4.
 
 This pass exists to **inform the diagnostic interview, not to load context for teaching.** That deeper job happens at Stage 6, after the diagnostic refines the picture. Pull only enough material here to:
 
@@ -58,7 +76,9 @@ This pass exists to **inform the diagnostic interview, not to load context for t
 - Identify the prerequisite chain and the most-common misconceptions for the topic at the depth target
 - Write good diagnostic questions in Stage 4
 
-**Fan out to subagents.** Invoke the `agent-orchestration` skill for topology — orchestrator-worker is the standard fit. One worker per chunk is enough at this stage; the deeper pass is Stage 6. Each worker's brief: the chunk topic, the depth target, the prerequisite chain, the 3–4 most-common misconceptions at this level. Source-quality requirements from [references/accuracy-and-claims.md](references/accuracy-and-claims.md).
+**For options 2/3/4:** Fan out 1 research worker per chunk using the chosen source. Invoke the `agent-orchestration` skill for topology — orchestrator-worker is the standard fit. Each worker's brief: chunk topic, depth target, prerequisite chain, the 3–4 most-common misconceptions at this level. Source-quality requirements from [references/accuracy-and-claims.md](references/accuracy-and-claims.md).
+
+**For option 1 (Skip):** Skip the agent fan-out and go directly to Stage 4 using your existing knowledge. The diagnostic will be slightly less calibrated to the user's local context but still runs. The learner has signalled they want speed.
 
 ### Stage 4 — Diagnostic interview (3–5 questions, 7 ceiling)
 
@@ -82,11 +102,38 @@ State the objective in plain ABCD format (Audience-Behavior-Condition-Degree):
 
 Adjust if the learner pushes back. This anchors scope, lets the learner correct your read, and gives both of you a shared signal of completion at the close.
 
-### Stage 6 — Agent deep research (silent, no user turn)
+### Stage 6 — Agent deep research (1 option turn + REAL tool calls)
 
-**Do not skip this stage.** Documented failure pattern from evals: after Stage 5 confirms the exit criterion, the natural temptation is to dive straight into teaching content. Resist it. If you're tempted to go from "sound right?" directly to opening Chunk 1, you're skipping Stage 6 — and the session will run on generic training-data defaults instead of context-engineered material specific to this learner's gaps and goals. The teacher will know the topic *competently* but not *richly*, and the difference shows up exactly when the learner asks the unexpected question. Always run Stage 6, even when it feels like delay.
+**Ask the learner how this deep pass should research. This is independent of Stage 3 — they may want different sources here.** Use a numbered list:
 
-Now that the diagnostic has located the learner and the exit criterion is locked, do the deep research pass. **This is context engineering.** Stage 7 will fact-check claims inline at the moment of teaching; Stage 6's job is to load the working context with enough domain material that teaching has range — abundant analogies, anticipated questions, and repair material for the specific misconceptions the diagnostic surfaced. Material that doesn't get directly cited still shapes how every turn lands.
+> "Now the deep research pass — pick one:
+> 1. Web only — 1 worker per chunk searching the web
+> 2. Local code only — 1 worker per chunk reading your repo + `~/.claude/`
+> 3. Web + local code — 1 worker per chunk doing both
+> 4. Deep multi-angle — 2–3 workers per chunk (breadth + depth + adversarial), web + local code (~2 extra min)"
+
+If the learner doesn't pick, default to **option 3 (Web + local code)**. There's deliberately no "skip" option — the do-not-skip framing below applies regardless of which source mix is chosen.
+
+**Stage 6 is not "research silently in your head." It is real Agent / Task tool calls.** The documented failure mode: the model reads "silent stage" as "I do this implicitly using training data" — which means no actual research happens and Stage 6 is functionally skipped. The session becomes a glossy retread of training-data defaults, and the user's local repo / docs / sibling skills go unread.
+
+**Hard protocol — your immediate next action after the learner picks at Stage 6:**
+
+1. **Do not produce any user-facing text yet.** Not "Got it, let's go." Not "Great, here's Chunk 1." Your very next output must be a tool call.
+2. **Spawn research subagents in parallel** using the Agent or Task tool. Worker count per chunk:
+
+   - options 1, 2, 3 → **1 worker per chunk**
+   - option 4 (Deep multi-angle) → **2–3 workers per chunk**, split by role (breadth, depth, adversarial)
+
+   Each subagent's prompt should look like:
+
+   > "Research [chunk topic] for a learner whose goal is [goal-probe answer] and whose diagnostic surfaced [findings]. Pull: 2–3 substantive worked examples in the learner's domain ([goal-probe domain]); the 3–5 most-common misconceptions and how they're repaired; cross-domain analogies from domains the learner already knows ([known domains]); source citations for ESTABLISHED claims; contested or rapidly-evolving points to flag. Restrict sources to [sources picked at Stage 6]. Return ~400 words of synthesis with source links. Do not generate the lesson — just raw material."
+
+3. **Wait for the subagents to return. Read their outputs.** The synthesis enters your working context.
+4. **Only now** open Chunk 1 of teaching (Stage 7).
+
+**Self-check before any output that opens Chunk 1:** "Did I make at least 1 Agent/Task tool call (options 1–3) or 2+ (option 4) and receive their results in the last few turns?" If no, you have skipped Stage 6. Stop, back up, spawn the agents.
+
+Beyond the protocol, **this is context engineering.** Stage 7 will fact-check claims inline at the moment of teaching; Stage 6's job is to load the working context with enough domain material that teaching has range — abundant analogies, anticipated questions, repair material for the specific misconceptions the diagnostic surfaced. Material that never gets directly cited still shapes how every turn lands.
 
 Scope tightly using the diagnostic + exit criterion:
 
@@ -110,7 +157,9 @@ This is the longest stage and has the most internal structure. Read [references/
 
 **One in-session user choice** at the first practice beat:
 
-> "Before I dive in: want to take a swing at the problem first — you'll probably struggle, and that's the point — or watch me work through one before you try?"
+> "Before I dive in, pick one:
+> 1. Take a swing at the problem first — you'll probably struggle, and that's the point
+> 2. Watch me work through one before you try"
 
 This exposes productive failure (try → struggle → consolidate) vs. worked example (study → fade → solo) as a goal-level choice. The first option leads with a fuller Explore phase; the second compresses Explore and goes straight to Model. Adult-learning autonomy benefit is high; cost is one turn.
 
