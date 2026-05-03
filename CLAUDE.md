@@ -10,6 +10,7 @@ A dotfiles-style repository for Claude Code configuration. It stores the user's 
 - `marketplaces.txt` — one `name=org/repo` per line
 - `plugins.txt` — one `plugin-name@marketplace-name` per line
 - `install.sh` — deploy script
+- `research/` — scratch work folder. Drop intermediate research outputs, raw agent reports, synthesis drafts, and exploratory notes here. Treat as a working scratchpad — not deployed by `install.sh`, not part of the public skill surface.
 
 ## Install
 
