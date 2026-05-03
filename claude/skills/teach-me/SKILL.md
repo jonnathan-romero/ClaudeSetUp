@@ -24,7 +24,7 @@ These apply at every turn. Each one corresponds to a documented failure mode of 
 
 ## Flow
 
-The session has nine stages. Stages 1–5 are short setup (3–8 user-facing turns); Stage 5b is silent agent work; Stage 6 is the bulk; Stages 7–8 close.
+The session has nine stages. Stages 1–5 are short setup (3–8 user-facing turns); Stage 6 is silent agent work; Stage 7 is the bulk; Stages 8–9 close.
 
 ### Stage 1 — Goal probe (1–2 turns)
 
@@ -52,13 +52,13 @@ This is plain-English depth scoping. Adult learners express depth through intend
 
 ### Stage 3 — Agent diagnostic-prep research (silent, no user turn)
 
-This pass exists to **inform the diagnostic interview, not to load context for teaching.** That deeper job happens at Stage 5b, after the diagnostic refines the picture. Pull only enough material here to:
+This pass exists to **inform the diagnostic interview, not to load context for teaching.** That deeper job happens at Stage 6, after the diagnostic refines the picture. Pull only enough material here to:
 
 - Sketch a chunk outline (max 3–4 chunks per session — the working-memory ceiling for novel concepts)
 - Identify the prerequisite chain and the most-common misconceptions for the topic at the depth target
 - Write good diagnostic questions in Stage 4
 
-**Fan out to subagents.** Invoke the `agent-orchestration` skill for topology — orchestrator-worker is the standard fit. One worker per chunk is enough at this stage; the deeper pass is Stage 5b. Each worker's brief: the chunk topic, the depth target, the prerequisite chain, the 3–4 most-common misconceptions at this level. Source-quality requirements from [references/accuracy-and-claims.md](references/accuracy-and-claims.md).
+**Fan out to subagents.** Invoke the `agent-orchestration` skill for topology — orchestrator-worker is the standard fit. One worker per chunk is enough at this stage; the deeper pass is Stage 6. Each worker's brief: the chunk topic, the depth target, the prerequisite chain, the 3–4 most-common misconceptions at this level. Source-quality requirements from [references/accuracy-and-claims.md](references/accuracy-and-claims.md).
 
 ### Stage 4 — Diagnostic interview (3–5 questions, 7 ceiling)
 
@@ -82,9 +82,11 @@ State the objective in plain ABCD format (Audience-Behavior-Condition-Degree):
 
 Adjust if the learner pushes back. This anchors scope, lets the learner correct your read, and gives both of you a shared signal of completion at the close.
 
-### Stage 5b — Agent deep research (silent, no user turn)
+### Stage 6 — Agent deep research (silent, no user turn)
 
-Now that the diagnostic has located the learner and the exit criterion is locked, do the deep research pass. **This is context engineering.** Stage 6 will fact-check claims inline at the moment of teaching; Stage 5b's job is to load the working context with enough domain material that teaching has range — abundant analogies, anticipated questions, and repair material for the specific misconceptions the diagnostic surfaced. Material that doesn't get directly cited still shapes how every turn lands.
+**Do not skip this stage.** Documented failure pattern from evals: after Stage 5 confirms the exit criterion, the natural temptation is to dive straight into teaching content. Resist it. If you're tempted to go from "sound right?" directly to opening Chunk 1, you're skipping Stage 6 — and the session will run on generic training-data defaults instead of context-engineered material specific to this learner's gaps and goals. The teacher will know the topic *competently* but not *richly*, and the difference shows up exactly when the learner asks the unexpected question. Always run Stage 6, even when it feels like delay.
+
+Now that the diagnostic has located the learner and the exit criterion is locked, do the deep research pass. **This is context engineering.** Stage 7 will fact-check claims inline at the moment of teaching; Stage 6's job is to load the working context with enough domain material that teaching has range — abundant analogies, anticipated questions, and repair material for the specific misconceptions the diagnostic surfaced. Material that doesn't get directly cited still shapes how every turn lands.
 
 Scope tightly using the diagnostic + exit criterion:
 
@@ -94,11 +96,11 @@ Scope tightly using the diagnostic + exit criterion:
 
 **Fan out to subagents — and go deeper than the `agent-orchestration` skill's defaults suggest.** Invoke `agent-orchestration` for topology guidance (orchestrator-worker is the right pattern), but deliberately exceed its standard team size or per-worker brief depth for this stage. Context engineering benefits from over-pulling; under-pulling is the failure mode. Practical default: **2–3 workers per chunk** rather than one — split by role (breadth, depth, adversarial / "what could go wrong here") — with substantive briefs that ask for material the model wouldn't otherwise have surfaced from training data alone.
 
-Each worker returns: 2–3 substantive worked examples or cases per chunk concept, the common misconceptions and their repair patterns, cross-domain analogies hugged to the goal-probe domain, source citations for claims you'll need to tag ESTABLISHED in Stage 6, and any contested or uncertain points to flag.
+Each worker returns: 2–3 substantive worked examples or cases per chunk concept, the common misconceptions and their repair patterns, cross-domain analogies hugged to the goal-probe domain, source citations for claims you'll need to tag ESTABLISHED in Stage 7, and any contested or uncertain points to flag.
 
-The point is to enter Stage 6 with a model that knows the topic richly, not one reading from notes.
+The point is to enter Stage 7 with a model that knows the topic richly, not one reading from notes.
 
-### Stage 6 — Interactive teaching (the bulk)
+### Stage 7 — Interactive teaching (the bulk)
 
 This is the longest stage and has the most internal structure. Read [references/teaching-engine.md](references/teaching-engine.md) before entering it.
 
@@ -112,7 +114,7 @@ This is the longest stage and has the most internal structure. Read [references/
 
 This exposes productive failure (try → struggle → consolidate) vs. worked example (study → fade → solo) as a goal-level choice. The first option leads with a fuller Explore phase; the second compresses Explore and goes straight to Model. Adult-learning autonomy benefit is high; cost is one turn.
 
-**The engine inside Stage 6 is a state machine.** Per concept, track the learner's Socratic state (0 = no schema, 1 = can recall, 2 = can explain, 3 = has applied). Default on every new concept is State 0 — promotion is *earned*, never assumed.
+**The engine inside Stage 7 is a state machine.** Per concept, track the learner's Socratic state (0 = no schema, 1 = can recall, 2 = can explain, 3 = has applied). Default on every new concept is State 0 — promotion is *earned*, never assumed.
 
 **Per-turn signals:**
 - Correct + reasoning → fade one scaffold; advance.
@@ -129,24 +131,26 @@ This exposes productive failure (try → struggle → consolidate) vs. worked ex
 
 **Wrong-answer response template:** Acknowledge → Diagnose → Correct → Re-engage. ≤8 sentences total. Full template and anti-patterns: [references/feedback-and-tone.md](references/feedback-and-tone.md).
 
-### Stage 7 — Close (always, regardless of quiz)
+### Stage 8 — Close (always, regardless of quiz)
 
-Enter Stage 7 when **whichever happens first**:
+Enter Stage 8 when **whichever happens first**:
 - All planned chunks are mastered — the learner has demonstrated the exit-criterion behavior independently, OR
 - The learner explicitly asks to wrap up, OR
 - The length budget from Stage 2 is reached.
 
-If the length budget arrives before mastery, prefer to compress remaining content and still run Stage 7 over running long. The close is what makes the session transfer; skipping it for "one more chunk" is a bad trade.
+If the length budget arrives before mastery, prefer to compress remaining content and still run Stage 8 over running long. The close is what makes the session transfer; skipping it for "one more chunk" is a bad trade.
 
-Three moves, in order. None of them is optional.
+Three moves, in order. **None is optional. None is satisfied by you talking.** Each move requires the learner to *do* something before you advance.
 
-1. **Summary at principle level.** Name 3–5 takeaways explicitly. Not "we covered X, Y, Z" but "the pattern underneath all three is ___."
-2. **Forward-bridge.** Ask the learner to *generate* (not recognize) two other contexts where this principle applies. This is the single highest-leverage move for transfer of learning — most teaching skips it, which is why most teaching fails to transfer.
-3. **Transfer-inoculation problem.** Pose one structurally identical problem in a novel surface context. Learner solves before close.
+1. **Summary at principle level.** Name 3–5 takeaways explicitly. Not "we covered X, Y, Z" but "the pattern underneath all three is ___." The summary names the *abstract* structure, not the surface examples taught.
 
-Connect explicitly back to the Stage 1 goal probe answer ("you said you wanted to ___ — here's how this gets you there"). Procedure and examples: [references/close-and-transfer.md](references/close-and-transfer.md).
+2. **Forward-bridge — the learner generates, not you.** Use this prompt (or a close paraphrase): *"Before we wrap, name two situations outside [topic] where this principle would show up. I want you to generate them, not me — rough is fine."* Then **wait for their response**. Do not list examples yourself; do not move on until the learner has produced two. If they produce only one or generic answers ("um, anywhere data structures are used"), give them one concrete seed and ask for the second independently. This is the single highest-leverage move for transfer; the documented failure is the teacher monologuing the bridge instead of waiting for the learner to generate it.
 
-### Stage 8 — Optional quiz (user opts in)
+3. **Transfer-inoculation problem — hard requirement.** Pose ONE structurally-identical problem in a *novel surface context* (different domain, different framing, same underlying skill). The learner attempts it before the session ends. This is not a quiz question and it is not optional. Do NOT skip to a final summary, "go ship it," or Stage 9 quiz offer until the learner has actually attempted this problem. If they get it right, transfer is in good shape. If they stall or get it wrong, name the gap and address it inline before closing.
+
+Connect explicitly back to the Stage 1 goal probe answer ("you said you wanted to ___ — here's how this gets you there"). Full procedure and worked examples: [references/close-and-transfer.md](references/close-and-transfer.md).
+
+### Stage 9 — Optional quiz (user opts in)
 
 Ask:
 
@@ -165,7 +169,7 @@ The user picks goals and pace. You pick the pedagogy.
 **User-decided:**
 
 - Session length (Stage 2)
-- Try-first vs. model-first (Stage 6)
+- Try-first vs. model-first (Stage 7)
 - Whether to take the quiz, and quiz length
 - Explicit method overrides ("just lecture me")
 
@@ -200,14 +204,14 @@ Compress or skip the skill for:
 - Debugging tasks where the user wants a fix, not a lesson.
 - Quick clarifications inside an ongoing conversation about something else.
 
-If the user says "actually just tell me," compress: skip Stages 2 and 4, give a direct explanation, end with the forward-bridge from Stage 7. The principle is to honor the user's stated goals — that's the autonomy support that makes the skill work for adult learners in the first place.
+If the user says "actually just tell me," compress: skip Stages 2 and 4, give a direct explanation, end with the forward-bridge from Stage 8. The principle is to honor the user's stated goals — that's the autonomy support that makes the skill work for adult learners in the first place.
 
 ## References
 
 - [interview.md](references/interview.md) — Stage 1 goal probe + Stage 4 diagnostic protocol with worked example
-- [teaching-engine.md](references/teaching-engine.md) — Stage 6 internals: method-picker matrix, state machine, signal→action table, hint hierarchy
+- [teaching-engine.md](references/teaching-engine.md) — Stage 7 internals: method-picker matrix, state machine, signal→action table, hint hierarchy
 - [misconception-repair.md](references/misconception-repair.md) — repair strategy by misconception type (Chi's three-level hierarchy) with decision tree
 - [accuracy-and-claims.md](references/accuracy-and-claims.md) — Chain-of-Verification checklist + confidence tagging policy
 - [feedback-and-tone.md](references/feedback-and-tone.md) — wrong-answer template, feedback rules, LLM and adult-learner anti-patterns
-- [close-and-transfer.md](references/close-and-transfer.md) — Stage 7 mechanics: summary, forward-bridge, transfer inoculation
-- [quiz.md](references/quiz.md) — Stage 8 structure: 7-question Bloom ramp, distractor design, re-test loop
+- [close-and-transfer.md](references/close-and-transfer.md) — Stage 8 mechanics: summary, forward-bridge, transfer inoculation
+- [quiz.md](references/quiz.md) — Stage 9 structure: 7-question Bloom ramp, distractor design, re-test loop

@@ -1,6 +1,6 @@
-# Teaching Engine: Stage 6 Internals
+# Teaching Engine: Stage 7 Internals
 
-Read this before entering Stage 6. The engine is a state machine, not free-form conversation. Most LLM-tutor failures come from running Socratic-shaped scripts that ignore what the learner said; the rules below prevent that.
+Read this before entering Stage 7. The engine is a state machine, not free-form conversation. Most LLM-tutor failures come from running Socratic-shaped scripts that ignore what the learner said; the rules below prevent that.
 
 ## Method-picker matrix
 

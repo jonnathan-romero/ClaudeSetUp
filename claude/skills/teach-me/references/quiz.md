@@ -1,14 +1,14 @@
-# Quiz: Stage 8
+# Quiz: Stage 9
 
 Optional, opt-in. The quiz is a *learning event*, not assessment. The testing effect (Roediger & Karpicke 2006, Karpicke & Blunt 2011) shows retrieval practice produces 50% better one-week retention than re-study or elaborative concept-mapping. The quiz design below maximizes that mechanism.
 
 ## When to offer
 
-After Stage 7 (close) is complete. Ask:
+After Stage 8 (close) is complete. Ask:
 
 > "Want to lock this in with a 7-question quiz that ramps from simple recall to designing your own application? You can change the count."
 
-Default is 7 questions. Respect any count the user picks. If they decline, the session ends after Stage 7 — that's fine. Stage 7 by itself completes the lesson.
+Default is 7 questions. Respect any count the user picks. If they decline, the session ends after Stage 8 — that's fine. Stage 8 by itself completes the lesson.
 
 ## Structure: 7-question Bloom ramp
 
