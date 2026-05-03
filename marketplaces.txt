@@ -1,5 +1,4 @@
 # name=owner/repo
 claude-plugins-official=anthropics/claude-plugins-official
 voltagent-subagents=VoltAgent/awesome-claude-code-subagents
-claude-code-skills=alirezarezvani/claude-skills
 anthropic-agent-skills=anthropics/skills

@@ -9,19 +9,8 @@ voltagent-domains@voltagent-subagents
 voltagent-biz@voltagent-subagents
 voltagent-meta@voltagent-subagents
 voltagent-research@voltagent-subagents
-# All claude-code-skills plugins disabled: their plugin.jsons declare `"skills": "./"` (string) instead of an array of skill paths, which the loader rejects with "Path escapes plugin directory". Re-enable once upstream switches to the array form.
-# engineering-skills@claude-code-skills
-# engineering-advanced-skills@claude-code-skills
-# product-skills@claude-code-skills
-# marketing-skills@claude-code-skills
-# ra-qm-skills@claude-code-skills
-# pm-skills@claude-code-skills
-# c-level-skills@claude-code-skills
-# business-growth-skills@claude-code-skills
-# finance-skills@claude-code-skills
 code-review@claude-plugins-official
 code-simplifier@claude-plugins-official
 skill-creator@claude-plugins-official
-# data-engineering@claude-plugins-official  # alias of data@claude-plugins-official (same upstream/SHA, just two marketplace names) — keeping `data` only to avoid duplicate skill registration.
 data@claude-plugins-official
 document-skills@anthropic-agent-skills
