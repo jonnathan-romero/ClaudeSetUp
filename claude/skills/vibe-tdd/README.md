@@ -1,4 +1,4 @@
-# test-driven-development
+# vibe-tdd
 
 A Claude Code skill that drives the red-green-refactor loop for
 Python/pytest, with explicit countermeasures for the failure modes

@@ -38,6 +38,7 @@
       "Bash(git add)",
       "Bash(git commit *)",
       "Bash(git commit)",
+      "Bash(git worktree *)",
       "Bash(pytest *)",
       "Bash(pytest)",
       "Bash(uv run *)",

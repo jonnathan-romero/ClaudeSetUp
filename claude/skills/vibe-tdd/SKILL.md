@@ -1,5 +1,5 @@
 ---
-name: test-driven-development
+name: vibe-tdd
 description: Test-driven development with the red-green-refactor loop for Python/pytest. ALWAYS trigger when the user says "TDD", "red-green-refactor", "test-first", "failing test", or "tracer bullet"; wants to build a feature or fix a bug via tests; asks to write pytest tests before implementation; or needs characterization tests before refactoring legacy code. Skip for spikes/prototypes, exploratory data analysis, cosmetic UI changes, performance tuning of already-correct code, one-shot scripts, or when the interface is still being explored.
 ---
 
