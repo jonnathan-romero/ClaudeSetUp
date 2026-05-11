@@ -20,7 +20,11 @@ This single question is the highest-leverage probe in the session. The answer ma
 
 If the learner says "I just want to learn it" or "I'm curious," try the stakes probe:
 
-> "Is this for a conversation, a task you have coming up, a personal project, or operating something where the stakes are real?"
+> "Is this for:
+> 1. A conversation you want to be ready for
+> 2. A task you have coming up
+> 3. A personal project
+> 4. Operating something where the stakes are real?"
 
 If still vague, the boundary probe:
 
@@ -112,7 +116,7 @@ If you cannot describe the misconception that would lead a learner to choose a d
 
 **Goal probe (Stage 1):**
 
-> "What's the first thing you'd want to do with Bayesian stats — interpret a paper, run an analysis on your own data, decide whether to use it for a project, something else?"
+> "What's the first thing you'd want to do with Bayesian stats — or what would 'understanding this well' look like for you?"
 
 User: "I want to be able to set up a Bayesian model for an A/B test at work."
 
@@ -121,7 +125,12 @@ User: "I want to be able to set up a Bayesian model for an A/B test at work."
 
 **Stage 2 — Length offer:**
 
-> "Working understanding (~25 turns) or deep dive (~40+)? For an applied A/B test setup, working understanding is usually enough — you can come back for the deeper theory later."
+> "How deep:
+> 1. Quick orientation (~15 turns)
+> 2. Working understanding (~30 turns)
+> 3. Deep dive (~50+ turns)
+>
+> For an applied A/B test setup, working understanding is usually enough — you can come back for the deeper theory later."
 
 User: "Working understanding."
 
@@ -150,7 +159,7 @@ User: "I always thought confidence intervals tell you where the true value is."
 
 → Confirmed: the misconception is in the frequentist side, not the Bayesian side. The "what does CI mean" misconception is documented and well-named.
 
-Stop check: do I know enough to plan? Yes. The session needs to (a) repair the CI-tells-you-the-truth misconception, (b) introduce prior + likelihood → posterior, (c) walk through one A/B-flavored example, (d) end with the user setting up a real model. Three more diagnostic questions wouldn't change that plan.
+Stop check: do I know enough to plan? Yes. The session needs to (a) repair the CI-tells-you-the-truth misconception, (b) introduce prior + likelihood → posterior, (c) walk through one A/B-flavored example, (d) end with the user reasoning through how they'd structure a model for their A/B test — verbally / on paper, not actually building it; the build is their work after the session. Three more diagnostic questions wouldn't change that plan.
 
 → End diagnostic; proceed to Stage 5.
 

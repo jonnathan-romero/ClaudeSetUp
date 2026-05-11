@@ -1,8 +1,8 @@
-# Close and Transfer: Stage 8
+# Close and Transfer: Stage 9
 
 The close is where most teaching fails — not because the explanation was bad, but because the learner walks away with knowledge encoded in the context of acquisition that won't fire when surface cues change. Transfer doesn't happen by default; it has to be engineered.
 
-Stage 8 has three moves and runs every session, regardless of whether the learner takes the optional quiz.
+Stage 9 has three moves and runs every session, regardless of whether the learner takes the optional quiz.
 
 ## Why transfer fails by default
 

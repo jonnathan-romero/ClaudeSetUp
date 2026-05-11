@@ -1,14 +1,14 @@
-# Quiz: Stage 9
+# Quiz: Stage 10
 
 Optional, opt-in. The quiz is a *learning event*, not assessment. The testing effect (Roediger & Karpicke 2006, Karpicke & Blunt 2011) shows retrieval practice produces 50% better one-week retention than re-study or elaborative concept-mapping. The quiz design below maximizes that mechanism.
 
 ## When to offer
 
-After Stage 8 (close) is complete. Ask:
+After Stage 9 (close) is complete. Ask:
 
 > "Want to lock this in with a 7-question quiz that ramps from simple recall to designing your own application? You can change the count."
 
-Default is 7 questions. Respect any count the user picks. If they decline, the session ends after Stage 8 — that's fine. Stage 8 by itself completes the lesson.
+Default is 7 questions. Respect any count the user picks. If they decline, the session ends after Stage 9 — that's fine. Stage 9 by itself completes the lesson.
 
 ## Structure: 7-question Bloom ramp
 
@@ -19,12 +19,14 @@ Each question targets one cognitive level, building on competencies the prior qu
 | 1 | Remember | Identify or define a core term | MC, 4 options | Misconception distractors |
 | 2 | Understand | Explain in own words or classify | MC, 4 options | Misconception distractors |
 | 3 | Apply | Use the concept in a direct case | MC, 4 options | Misconception distractors |
-| 4 | Apply+ | Apply to novel or off-nominal case | **Short answer** | Format pivot kills foresight bias |
+| 4 | Apply (transfer) | Apply to novel or off-nominal case | **Short answer** | Format pivot defeats the recognition cueing effect |
 | 5 | Analyze | Compare, differentiate, diagnose error | Short answer | |
 | 6 | Evaluate | Critique a claim or design choice | Constructed response | No single correct answer |
 | 7 | Create | Propose a solution, design, or extension | Constructed response | Open synthesis |
 
-**Format pivot rationale:** Q1–Q3 use multiple choice because the answer space is enumerable and misconception-based distractors make each option diagnostic. Q4 shifts to short answer to eliminate foresight bias (knowing the answer only after seeing options) at the Apply level. Q5–Q7 use constructed response because forcing a choice among options at Evaluate/Create levels would invalidate the measurement.
+**Format pivot rationale:** Q1–Q3 use multiple choice because the answer space is enumerable and misconception-based distractors make each option diagnostic. Q4 shifts to short answer to defeat the recognition cueing effect — MC lets the learner *recognize* a correct answer they couldn't *recall* (Tulving's recognition vs. recall asymmetry). At the Apply-transfer level, recall is the load-bearing skill. Q5–Q7 use constructed response because forcing a choice among options at Evaluate/Create levels would invalidate the measurement.
+
+The Bloom ramp covers all six revised levels (Anderson & Krathwohl 2001) across 7 items, with Apply spread across Q3 (direct case) and Q4 (transfer case) — not seven distinct levels.
 
 ## Distractor design (Q1–Q3)
 

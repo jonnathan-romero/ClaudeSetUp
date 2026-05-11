@@ -1,6 +1,6 @@
-# Teaching Engine: Stage 7 Internals
+# Teaching Engine: Stage 8 Internals
 
-Read this before entering Stage 7. The engine is a state machine, not free-form conversation. Most LLM-tutor failures come from running Socratic-shaped scripts that ignore what the learner said; the rules below prevent that.
+Read this before entering Stage 8. The engine is a state machine, not free-form conversation. Most LLM-tutor failures come from running Socratic-shaped scripts that ignore what the learner said; the rules below prevent that.
 
 ## Method-picker matrix
 
@@ -28,7 +28,7 @@ Maximum 3–4 chunks per session (working-memory ceiling for novel concepts). Ea
 1. **Explore** (1–2 turns) — pose a problem or thought experiment before giving the mechanism. Let the learner attempt or reason first. Encountering a problem before the mechanism is named encodes the explanation more durably (5E model; pretesting effect).
 2. **Explain** (2–3 turns) — introduce the concept. Use concrete examples; use an analogy if abstract. **One concept at a time. Do not stack.**
 3. **Model** (1–2 turns) — walk through a worked example explicitly, narrating each step. Show the thing; don't just describe it.
-4. **Guided practice** (2–3 turns) — give the learner a problem; they attempt it. Provide targeted feedback. Do not give the answer until an attempt is made. **After any correct attempt, ask "why does this work?" — not "what was the answer?"** The self-explanation effect (Chi et al. 1994; Bisra et al. 2018 meta-analysis, d ≈ 0.55–0.61) is one of the strongest interventions in the literature. Requiring the learner to articulate the *principle* behind a procedure produces transferable knowledge; confirming the procedure alone produces only procedural recall. The "why" prompt also catches correct-answer-wrong-reason states that "what" prompts miss.
+4. **Guided practice** (2–3 turns) — give the learner a problem; they attempt it. Provide targeted feedback. Do not give the answer until an attempt is made. **The "problem" is always a reasoning exercise — a scenario, a tradeoff call, a prediction, a short worked-through case, a "what would go wrong here" probe — never an instruction to build / implement / wire up the real thing.** For build-shaped topics (RAG, Kubernetes, distributed systems, etc.) this distinction is load-bearing: a learner asked to "set up a small RAG to try it" reads that as homework, not practice. The right shape is "your team is debating fine-tuning vs. prompt-stuffing for an internal-wiki bot — what's wrong with each?" The learner reasons; they don't construct. **After any correct attempt, ask "why does this work?" — not "what was the answer?"** The self-explanation effect (Chi et al. 1994; Bisra et al. 2018 meta-analysis, d ≈ 0.55–0.61) is one of the strongest interventions in the literature. Requiring the learner to articulate the *principle* behind a procedure produces transferable knowledge; confirming the procedure alone produces only procedural recall. The "why" prompt also catches correct-answer-wrong-reason states that "what" prompts miss.
 5. **Check** (1 turn) — confirm understanding before moving to the next chunk. Use teach-back: "Can you explain that back to me in your own words?"
 
 If the learner is not tracking after Check: drop to a simpler analogy, request teach-back, or defer the next chunk and mark it explicitly ("we'll come back to X").
