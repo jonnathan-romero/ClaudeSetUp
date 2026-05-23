@@ -1,14 +1,4 @@
 # plugin@marketplace
-voltagent-core-dev@voltagent-subagents
-voltagent-lang@voltagent-subagents
-voltagent-infra@voltagent-subagents
-# voltagent-qa-sec@voltagent-subagents  # plugin.json references missing files (cost-accounting-performance-reviewer.md, performance-roi-translator.md). Re-enable once upstream adds them.
-voltagent-data-ai@voltagent-subagents
-voltagent-dev-exp@voltagent-subagents
-voltagent-domains@voltagent-subagents
-voltagent-biz@voltagent-subagents
-voltagent-meta@voltagent-subagents
-voltagent-research@voltagent-subagents
 code-review@claude-plugins-official
 code-simplifier@claude-plugins-official
 skill-creator@claude-plugins-official
