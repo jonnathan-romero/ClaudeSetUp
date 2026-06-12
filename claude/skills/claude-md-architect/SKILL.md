@@ -47,6 +47,7 @@ If ambiguous, ask the user which mode.
 2. Read `references/decision-tree.md`.
 3. Walk the tree out loud. Recommend exactly one of: CLAUDE.md, Skill, slash command, hook, subagent.
 4. Give a one-line reason and a concrete next step (the file path or command to run).
+5. Hand off when the answer is *authoring*, not routing — this skill decides the primitive, it doesn't author skills or agents. If the verdict is a **Skill**, hand off to the `skill-best-practices` skill; if a **subagent**, hand off to `agent-best-practices`. Those skills own the authoring quality bar — point there instead of reproducing it here.
 
 ## Cross-cutting
 

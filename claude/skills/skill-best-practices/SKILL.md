@@ -23,7 +23,7 @@ If `skill-creator` is also active, layer this skill's principles into each of it
 |---|---|---|
 | 1 | Frontmatter parses as valid YAML; closing `---` on its own line | `python -c "import yaml; yaml.safe_load(open('SKILL.md'))"` |
 | 2 | `name` is kebab-case, ≤64 chars, matches directory name | Visual |
-| 3 | `description` ≤1024 chars, third person, leads with what + when | See `references/descriptions.md` |
+| 3 | `description` + `when_to_use` ≤1536 chars (Claude Code listing cap; stay ≤1024 for open-standard portability), third person, leads with what + when | See `references/descriptions.md` |
 | 4 | Description includes concrete trigger phrases (file extensions, verbatim user wordings, domain terms) | See `references/descriptions.md` |
 | 5 | Description includes negative triggers if scope is ambiguous ("Do NOT use for...") | See `references/descriptions.md` |
 | 6 | SKILL.md body ≤500 lines; deeper detail moved to `references/` | `wc -l SKILL.md` |
@@ -36,7 +36,7 @@ If `skill-creator` is also active, layer this skill's principles into each of it
 
 1. **Vague description.** "Helps with documents" never triggers. Lead with what + when; list concrete user phrasings. See `references/descriptions.md`.
 2. **YAML reflowed by Prettier.** Keep `description` on a single line. Do not use `>` or `|` block scalars. Disable `proseWrap` for SKILL.md.
-3. **Token budget overflow.** All skill descriptions pre-load into a ~8K char budget (`SLASH_COMMAND_TOOL_CHAR_BUDGET`). With many skills installed, long descriptions truncate silently. Keep each one tight.
+3. **Token budget overflow.** All skill descriptions pre-load into a listing budget that scales with the model's context window (`skillListingBudgetFraction`, default ~1% — roughly 2K tokens at 200K, 10K at 1M; `SLASH_COMMAND_TOOL_CHAR_BUDGET` survives only as a fixed-count override). With many skills installed, the least-used descriptions drop first. Keep each one tight.
 4. **Wrong path.** It is `name/SKILL.md`, not `name.md`. Skills are directories.
 5. **Should have been a hook.** "Always run X after Y" is a hook, not a skill. Skills are requests Claude reasons over; hooks are deterministic enforcement. See `references/primitives.md`.
 6. **Treating SKILL.md as documentation.** Skills are operational instructions in imperative voice. Move long-form explanation to `references/`.
@@ -105,7 +105,7 @@ Reference files from SKILL.md with relative links: `See [descriptions.md](refere
 | Field | Required | Notes |
 |---|---|---|
 | `name` | yes | kebab-case, ≤64 chars, matches directory |
-| `description` | yes | ≤1024 chars, third person, what + when, concrete triggers |
+| `description` | yes | combined with `when_to_use` ≤1536 chars (stay ≤1024 for portability), third person, what + when, concrete triggers |
 | `allowed-tools` | no | Pre-approve to skip prompts: `Bash(git *) Read` |
 | `arguments` | no | Positional args; reference as `$name` in body |
 | `argument-hint` | no | Autocomplete hint shown after `/skill-name` |

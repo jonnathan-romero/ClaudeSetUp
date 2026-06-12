@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-log() { printf '[admin_install] %s\n' "$1"; }
+log() { printf '[install] %s\n' "$1"; }
 
 if [ "$EUID" -eq 0 ]; then
     log "ERROR: Run as your normal user — sudo will be invoked where needed."

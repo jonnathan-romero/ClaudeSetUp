@@ -31,7 +31,7 @@ name: skill-best-practices
 
 ### `description`
 
-- ≤1024 characters (the `description` + `when_to_use` *combined* cap is 1536; stay under 1024 to be safe)
+- Claude Code truncates the `description` + `when_to_use` *combined* at 1536 chars (`maxSkillDescriptionChars`); the 1024 figure is the open-standard author cap — stay under 1024 for portability and headroom
 - Third person, imperative voice
 - Lead with **what** + **when** in the first sentence
 - Include concrete trigger phrases — file extensions, verbatim user wordings, domain terms

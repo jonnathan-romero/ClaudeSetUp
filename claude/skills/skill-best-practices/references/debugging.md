@@ -35,7 +35,7 @@ If a skill is missing from `/skills`, it's mode 1 or 2. If it appears but doesn'
 
 ## Mode 1: Token budget overflow
 
-All skill names + descriptions pre-load into `SLASH_COMMAND_TOOL_CHAR_BUDGET` (~8K default). When you exceed the budget, some skills silently drop or truncate.
+All skill names + descriptions pre-load into a listing budget that scales with the model's context window (`skillListingBudgetFraction`, default ~1% — ≈2K tokens at 200K, ≈10K at 1M). When you exceed the budget, the least-used skills' descriptions drop or truncate first. `SLASH_COMMAND_TOOL_CHAR_BUDGET` survives only as a fixed-count override.
 
 **Symptoms**
 
@@ -46,21 +46,22 @@ All skill names + descriptions pre-load into `SLASH_COMMAND_TOOL_CHAR_BUDGET` (~
 **Diagnose**
 
 ```bash
-echo $SLASH_COMMAND_TOOL_CHAR_BUDGET   # default ~8000
+echo $SLASH_COMMAND_TOOL_CHAR_BUDGET   # only set if you've overridden the default
 ```
 
 Inside Claude Code:
 ```
 /skills
+/doctor      # reports whether the skill-listing budget is overflowing
 ```
-Count installed skills × average description length. If > budget, you're truncating.
+Count installed skills × average description length. If it exceeds ~1% of the model's context window, you're truncating.
 
 **Fix**
 
 - Tighten descriptions across the board (target ≤300 chars where you can)
 - Front-load critical use cases — first sentence survives truncation
 - Disable or uninstall unused skills/plugins
-- Raise the budget: `export SLASH_COMMAND_TOOL_CHAR_BUDGET=20000` before launching Claude Code
+- Raise the budget: either set `skillListingBudgetFraction` higher in settings, or pin a fixed count with `export SLASH_COMMAND_TOOL_CHAR_BUDGET=20000` before launching Claude Code
 
 ## Mode 2: Frontmatter or YAML breakage
 

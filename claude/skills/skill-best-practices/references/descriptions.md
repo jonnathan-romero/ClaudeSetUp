@@ -84,8 +84,8 @@ Use only for full report generation workflows.
 
 ## Length and budget
 
-- Per-skill cap: 1024 chars for `description`. Combined `description` + `when_to_use` cap: 1536 chars. Stay under 1024 to leave headroom.
-- Global budget: all skill descriptions in a session pre-load into `SLASH_COMMAND_TOOL_CHAR_BUDGET` (~8K default). With many skills installed, long descriptions truncate silently.
+- Per-skill cap: Claude Code truncates the combined `description` + `when_to_use` at 1536 chars in the listing (`maxSkillDescriptionChars`, default 1536). The 1024-char figure is the open-standard (agentskills.io) author cap — stay ≤1024 for cross-tool portability and headroom.
+- Global budget: all skill descriptions pre-load into a listing budget that scales with the model's context window (`skillListingBudgetFraction`, default ~1% — ≈2K tokens at 200K, ≈10K at 1M). `SLASH_COMMAND_TOOL_CHAR_BUDGET` survives only as a fixed-count override, not the primary mechanism. On overflow, the least-used skills' descriptions drop first.
 - Prioritize the first sentence — it survives truncation.
 
 ## Annotated good examples

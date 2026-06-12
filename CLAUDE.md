@@ -10,7 +10,6 @@ A dotfiles-style repository for Claude Code configuration. It stores the user's 
 - `marketplaces.txt` — one `name=org/repo` per line
 - `plugins.txt` — one `plugin-name@marketplace-name` per line
 - `install.sh` — deploy script
-- `research/` — scratch work folder. Drop intermediate research outputs, raw agent reports, synthesis drafts, and exploratory notes here. Treat as a working scratchpad — not deployed by `install.sh`, not part of the public skill surface.
 
 ## Install
 
@@ -19,7 +18,7 @@ A dotfiles-style repository for Claude Code configuration. It stores the user's 
 ```
 
 This script:
-1. Backs up existing `~/.claude` managed files (once per day, keeps 30 days)
+1. Backs up existing `~/.claude` managed files (once per day, keeps 7 days)
 2. Deep-merges `claude/settings.json` into `~/.claude/settings.json` (using `jq -s '.[0] * .[1]'`)
 3. Copies everything else from `claude/` into `~/.claude/` verbatim
 4. Registers plugin marketplaces from `marketplaces.txt` and installs plugins from `plugins.txt` via `claude plugin` CLI

@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 BACKUP_BASE="$CLAUDE_DIR/backups"
 BACKUP_DIR="$BACKUP_BASE/$(date +%Y-%m-%d)"
-MAX_BACKUPS=30
+MAX_BACKUPS=7
 
 log() { printf '[install] %s\n' "$1"; }
 
@@ -30,7 +30,7 @@ elif [ -d "$BACKUP_DIR" ]; then
 else
     mkdir -p "$BACKUP_DIR"
     # Back up only the files we manage (not sessions, cache, history, etc.)
-    for item in CLAUDE.md settings.json skills keybindings.json statusline-command.sh; do
+    for item in CLAUDE.md settings.json skills agents keybindings.json statusline-command.sh; do
         [ -e "$CLAUDE_DIR/$item" ] && cp -r "$CLAUDE_DIR/$item" "$BACKUP_DIR/"
     done
     log "Backed up managed files to $BACKUP_DIR"
@@ -65,6 +65,20 @@ find "$SCRIPT_DIR/claude" -mindepth 1 -not -name "settings.json" | while read -r
         log "Installed $rel"
     fi
 done
+
+# --- Wire up rga office-search adapters (xlsx/pptx) for the file-search skill ---
+SETUP_OFFICE="$CLAUDE_DIR/skills/file-search/scripts/setup_office_search.py"
+if [ -f "$SETUP_OFFICE" ]; then
+    if command -v rga &>/dev/null && command -v uv &>/dev/null; then
+        if uv run "$SETUP_OFFICE"; then
+            log "Registered rga xlsx/pptx adapters"
+        else
+            log "WARNING: rga office-adapter setup failed"
+        fi
+    else
+        log "Skipping rga office adapters (need 'rga' and 'uv' on PATH)"
+    fi
+fi
 
 # --- Install plugins ---
 if ! command -v claude &>/dev/null; then

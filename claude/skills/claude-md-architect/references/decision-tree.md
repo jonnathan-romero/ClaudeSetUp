@@ -44,6 +44,8 @@ If yes — and you don't want it loaded every session — it's a **Skill**.
 Skills load only when their description matches. Bulk content lives
 in `references/`.
 
+→ To author it, hand off to the `skill-best-practices` skill.
+
 ### 4. Is it an atomic action the user wants explicit control over?
 
 If yes — and timing matters — it's a **slash command**.
@@ -62,6 +64,8 @@ If yes — and it's self-contained — it's a **subagent**.
 
 Subagents have isolated context windows. They return a summary; their
 exploration debris doesn't pollute your session.
+
+→ To author it, hand off to the `agent-best-practices` skill.
 
 ## Common confusions
 

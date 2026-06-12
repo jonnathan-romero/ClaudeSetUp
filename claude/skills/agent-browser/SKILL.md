@@ -22,6 +22,16 @@ agent-browser install                # one-time: download a Chrome if none detec
 If the binary is missing: `npm i -g agent-browser` (or `brew install agent-browser`,
 `cargo install agent-browser`).
 
+On Arch-based Linux a fresh machine also needs Chrome's runtime libraries (nss,
+gtk3, libxkbcommon, …) or the browser fails to launch with a missing-`.so` error.
+When `agent-browser --version` fails, or the browser errors on a shared library,
+suggest the bundled bootstrap — it installs the pacman deps, the CLI, and Chrome
+for Testing in one shot. Don't run it unprompted (it uses `sudo`); offer it:
+
+```bash
+bash scripts/install.sh              # Arch/pacman: deps + CLI + Chrome for Testing
+```
+
 ## The one mechanic to internalize
 
 agent-browser identifies elements with refs (`@e1`, `@e2`, ...) emitted by
