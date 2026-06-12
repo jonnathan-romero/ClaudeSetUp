@@ -1,7 +1,7 @@
 ---
 name: gh-search
 description: Searches and discovers repositories, code, issues, PRs, and commits across all of GitHub with the `gh search` CLI and read-only `gh api` calls. ALWAYS trigger when the user wants to find GitHub projects ("is there a library/tool that does X", "find popular Rust TUI repos", "what repos use this dependency", "search GitHub for"), search code across many repos ("find real-world usages of this API", "who else calls X on GitHub", "gh search code"), find issues or PRs across repositories ("has anyone reported this upstream", "find PRs that touched X", "prior art for this feature"), or size up a repo you found (its README, stars, recent activity, structure). Covers GitHub search qualifiers (stars:, language:, topic:, pushed:, in:), the 1000-result cap and how to page past it, and JSON/jq output. Read-only — never creates, edits, comments, or merges. Do NOT use to search the CURRENT local checkout (use the Grep tool for local code/text) or to create/edit/comment-on/merge issues, PRs, or releases.
-allowed-tools: Bash(gh search *) Bash(gh repo view *) Bash(gh issue list *) Bash(gh pr list *) Bash(gh release list *) Read
+allowed-tools: Bash(gh search *), Bash(gh repo view *), Bash(gh issue list *), Bash(gh pr list *), Bash(gh release list *), Bash(gh api *), Read
 ---
 
 # gh-search

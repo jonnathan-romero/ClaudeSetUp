@@ -1,7 +1,7 @@
 ---
 name: prompt-master
 description: Writes, edits, reviews, and improves prompts of every kind — Claude/GPT/Gemini user prompts, system prompts, agent system prompts in .claude/agents/, SKILL.md frontmatter descriptions, subagent definitions, tool descriptions, RAG/extraction templates, voice/realtime instructions, and any LLM template string. ALWAYS trigger when the user says "write a prompt", "fix this prompt", "make my prompt better", "review my prompt", "is this prompt good", "improve the system prompt", "this prompt isn't working", "help me prompt", "tune this prompt", or pastes a multi-line prompt asking for feedback or rewrite. Also trigger when editing files matching *.md in .claude/skills/, .claude/agents/, .claude/commands/, .cursor/rules/, .clinerules, prompts/, or files containing prompt template strings sent to LLM APIs (anthropic.messages.create, openai.chat.completions.create, generate_content, llm.invoke). Do NOT use for general copy-editing of non-prompt content — use writing/style skills for that.
-allowed-tools: Read Write Edit Glob Grep Bash WebFetch
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, WebFetch
 effort: high
 ---
 
@@ -177,7 +177,7 @@ If you can't make a confident call (e.g., target tool unclear, intent contradict
 
 ## Why this exists
 
-Prompt engineering folklore is full of tactics that don't replicate, and rules that flip silently between model classes. This skill encodes evidence-grounded rules from the [research brief](research/00-synthesis.md) so you don't have to re-derive them every time. Cite the relevant reference whenever a user asks "why" — every claim in this skill traces back to one.
+Prompt engineering folklore is full of tactics that don't replicate, and rules that flip silently between model classes. This skill encodes evidence-grounded rules so you don't have to re-derive them every time. Cite the relevant reference below whenever a user asks "why" — every claim in this skill traces back to one.
 
 ## Deeper references
 
@@ -195,4 +195,3 @@ Prompt engineering folklore is full of tactics that don't replicate, and rules t
 - [eval-playbook.md](references/eval-playbook.md) — measure improvement, not vibes
 - [meta-generator.md](references/meta-generator.md) — the prompt that drives generate mode
 - [meta-improver.md](references/meta-improver.md) — the prompt that drives improve mode
-- [research/00-synthesis.md](research/00-synthesis.md) — full evidence base, citations, open questions

@@ -1,7 +1,7 @@
 ---
 name: colors
 description: 'Generates and critiques color palettes — UI scales, brand palettes, dataviz colormaps — using OKLCh and color theory. ALWAYS trigger when the user mentions palette, color scheme, design tokens, brand colors, accent color, OKLCh, WCAG contrast, APCA, color blindness, dark mode colors, Tailwind colors, Radix Colors, Material Design 3, ColorBrewer, viridis, matplotlib colormap, or asks to "build a palette around #XXXXXX", "extract colors from this image", "is this palette accessible", or "what colors should I use for a [adjective] [product]". Computes via coloraide; explains color-theory reasoning. Do NOT trigger for image color editing in Photoshop, isolated hex lookups, or pure CSS layout questions unrelated to color choice.'
-allowed-tools: Bash(uv run *) Read Write Glob
+allowed-tools: Bash(uv run *), Read, Write, Glob
 ---
 
 # Colors

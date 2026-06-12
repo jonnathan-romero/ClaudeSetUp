@@ -5,3 +5,5 @@
 .plan/
 .research/
 .fixtures/
+__pycache__/
+*.py[cod]

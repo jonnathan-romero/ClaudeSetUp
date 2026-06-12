@@ -26,6 +26,9 @@
 - For multi-step tasks, state a brief plan: step → verify for each.
 - For large implementations, suggest phased multi-agent approaches (competitive, collaborative, or mixed). Use separate branches for parallel agent work.
 
+## Research Agents
+- When `web-researcher` or `doc-researcher` returns a saved report path, ask whether to load the full file into context before continuing. `Read` the file only if the answer is yes — the digest already answers most questions; the full file is for context engineering (a clean synthesis is far cheaper to load than the raw sources). On a pure-locate task answered inline with no file, there's nothing to offer.
+
 ## Python
 - Python 3.12+, `uv` only (never pip, conda, poetry)
 - Google-style docstrings

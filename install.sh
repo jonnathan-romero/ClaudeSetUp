@@ -30,7 +30,7 @@ elif [ -d "$BACKUP_DIR" ]; then
 else
     mkdir -p "$BACKUP_DIR"
     # Back up only the files we manage (not sessions, cache, history, etc.)
-    for item in CLAUDE.md settings.json skills agents keybindings.json statusline-command.sh; do
+    for item in CLAUDE.md settings.json skills agents statusline-command.sh; do
         [ -e "$CLAUDE_DIR/$item" ] && cp -r "$CLAUDE_DIR/$item" "$BACKUP_DIR/"
     done
     log "Backed up managed files to $BACKUP_DIR"
@@ -40,30 +40,51 @@ fi
 log "Installing configuration files..."
 mkdir -p "$CLAUDE_DIR"
 
-# settings.json gets special treatment: deep-merge repo into live
+# settings.json gets special treatment: deep-merge repo into live.
+# jq's `*` deep-merges objects but REPLACES arrays, which would wipe any
+# permission rules the user added live (via /permissions). So merge the
+# objects, then rebuild permissions.allow/deny as repo-order ++ live-only
+# extras (no dupes) — repo entries win order, live-only entries are kept.
 if [ -f "$SCRIPT_DIR/claude/settings.json" ]; then
     if [ -f "$CLAUDE_DIR/settings.json" ]; then
         TMP="$(mktemp)"
-        jq -s '.[0] * .[1]' "$CLAUDE_DIR/settings.json" "$SCRIPT_DIR/claude/settings.json" > "$TMP"
+        jq -s '
+            .[0] as $live | .[1] as $repo
+            | ($live * $repo)
+            | .permissions.allow = (($repo.permissions.allow // []) + (($live.permissions.allow // []) - ($repo.permissions.allow // [])))
+            | .permissions.deny  = (($repo.permissions.deny  // []) + (($live.permissions.deny  // []) - ($repo.permissions.deny  // [])))
+        ' "$CLAUDE_DIR/settings.json" "$SCRIPT_DIR/claude/settings.json" > "$TMP"
         mv "$TMP" "$CLAUDE_DIR/settings.json"
-        log "Deep-merged settings.json"
+        log "Deep-merged settings.json (permission arrays unioned)"
     else
         cp "$SCRIPT_DIR/claude/settings.json" "$CLAUDE_DIR/settings.json"
         log "Installed settings.json"
     fi
 fi
 
-# Everything else: straight copy (preserve mode so executables stay executable)
-find "$SCRIPT_DIR/claude" -mindepth 1 -not -name "settings.json" | while read -r src; do
+# Fully-managed subtrees: mirror with delete semantics so renamed/removed
+# skills and agents don't linger in ~/.claude. Prefer rsync; fall back to
+# remove-then-copy. The daily backup above covers a mid-copy failure.
+for subtree in skills agents; do
+    [ -d "$SCRIPT_DIR/claude/$subtree" ] || continue
+    if command -v rsync &>/dev/null; then
+        rsync -a --delete --exclude '__pycache__' --exclude '*.py[cod]' \
+            "$SCRIPT_DIR/claude/$subtree/" "$CLAUDE_DIR/$subtree/"
+    else
+        rm -rf "${CLAUDE_DIR:?}/$subtree"
+        cp -rp "$SCRIPT_DIR/claude/$subtree" "$CLAUDE_DIR/$subtree"
+        find "$CLAUDE_DIR/$subtree" -name '__pycache__' -type d -prune -exec rm -rf {} +
+    fi
+    log "Synced $subtree/ (with delete)"
+done
+
+# Remaining top-level managed files: straight copy (preserve mode so
+# executables stay executable). skills/ and agents/ handled above.
+find "$SCRIPT_DIR/claude" -mindepth 1 -maxdepth 1 -type f -not -name "settings.json" | while IFS= read -r src; do
     rel="${src#$SCRIPT_DIR/claude/}"
     dest="$CLAUDE_DIR/$rel"
-    if [ -d "$src" ]; then
-        mkdir -p "$dest"
-    else
-        mkdir -p "$(dirname "$dest")"
-        cp -fp "$src" "$dest"
-        log "Installed $rel"
-    fi
+    cp -fp "$src" "$dest"
+    log "Installed $rel"
 done
 
 # --- Wire up rga office-search adapters (xlsx/pptx) for the file-search skill ---
@@ -81,9 +102,12 @@ if [ -f "$SETUP_OFFICE" ]; then
 fi
 
 # --- Install plugins ---
+# Config files are already installed at this point; plugins are the only
+# remaining step, so a missing CLI is a partial skip, not a failure.
 if ! command -v claude &>/dev/null; then
-    log "ERROR: 'claude' CLI not found in PATH. Skipping plugin install."
-    exit 1
+    log "WARNING: 'claude' CLI not found in PATH — config installed, skipping plugins."
+    log "Done (without plugins)!"
+    exit 0
 fi
 
 # Register marketplaces from marketplaces.txt

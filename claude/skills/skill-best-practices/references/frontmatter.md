@@ -54,7 +54,7 @@ Set `true` to prevent Claude from auto-triggering. The skill runs only when the 
 name: deploy
 description: Deploy to production
 disable-model-invocation: true
-allowed-tools: Bash(kubectl *) Bash(helm *)
+allowed-tools: Bash(kubectl *), Bash(helm *)
 ---
 ```
 
@@ -76,10 +76,10 @@ user-invocable: false
 
 Pre-approves tools so Claude doesn't prompt mid-skill. Does *not* expand permissions beyond your settings — your global permission rules still apply.
 
-Two valid forms:
+Two valid forms (comma-separated string, or YAML list). Prefer one of these over a space-separated string — space separation is ambiguous when a pattern itself contains a space, e.g. `Bash(git add *)`:
 
 ```yaml
-allowed-tools: Bash(git add *) Bash(git commit *) Read Grep
+allowed-tools: Bash(git add *), Bash(git commit *), Read, Grep
 ```
 
 ```yaml

@@ -9,7 +9,7 @@ A Claude Code skill for writing, editing, reviewing, and improving prompts of ev
 
 ## Source research
 
-Foundational evidence is captured in `research/` — 15 raw research streams plus a synthesis brief. Authoritative URLs cited across the references include:
+The rules in this skill are grounded in the sources below:
 
 - Anthropic prompt engineering (consolidated) — https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/claude-prompting-best-practices
 - Anthropic prompting tools (generator + improver) — https://platform.claude.com/docs/en/build-with-claude/prompt-engineering/prompting-tools
@@ -53,4 +53,4 @@ Output style toggles between full (issues table + diff + tests) and terse (`🎯
 
 ## Changelog
 
-- **2026-05-02** — iter-2 release. Three modes (generate, improve, decompose), 13 reference files, `scripts/audit.py` deterministic detector, terse output toggle, 8 behavior evals + 20 trigger evals. Backed by 15 raw research reports synthesized into evidence-grounded operational rules.
+- **2026-05-02** — iter-2 release. Three modes (generate, improve, decompose), 14 reference files, `scripts/audit.py` deterministic detector, terse output toggle. Evidence-grounded operational rules, cited inline across the references.

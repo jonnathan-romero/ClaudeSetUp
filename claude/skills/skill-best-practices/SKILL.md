@@ -106,7 +106,7 @@ Reference files from SKILL.md with relative links: `See [descriptions.md](refere
 |---|---|---|
 | `name` | yes | kebab-case, ≤64 chars, matches directory |
 | `description` | yes | combined with `when_to_use` ≤1536 chars (stay ≤1024 for portability), third person, what + when, concrete triggers |
-| `allowed-tools` | no | Pre-approve to skip prompts: `Bash(git *) Read` |
+| `allowed-tools` | no | Pre-approve to skip prompts: `Bash(git *), Read` (comma-separated — unambiguous when a pattern contains spaces) |
 | `arguments` | no | Positional args; reference as `$name` in body |
 | `argument-hint` | no | Autocomplete hint shown after `/skill-name` |
 | `disable-model-invocation` | no | `true` for side-effect skills like `/deploy` (manual-only) |
