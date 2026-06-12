@@ -7,4 +7,6 @@ Interview the user relentlessly about whatever they bring — a plan, a design, 
 
 Ask the questions one at a time. For complicated questions, suggest a pro/cons breakout.
 
+When a question has a small set of discrete answers, ask it with AskUserQuestion — recommended option first, labelled `(Recommended)`; use option descriptions or previews for the pro/cons breakout. Keep open-ended "defend this" challenges as prose.
+
 If a question can be answered by exploring the codebase, explore the codebase instead.
