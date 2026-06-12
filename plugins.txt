@@ -2,5 +2,4 @@
 code-review@claude-plugins-official
 code-simplifier@claude-plugins-official
 skill-creator@claude-plugins-official
-data@claude-plugins-official
 document-skills@anthropic-agent-skills
