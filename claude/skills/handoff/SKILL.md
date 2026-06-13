@@ -28,7 +28,7 @@ _Generated: <ISO date>_
 - Working directory: <cwd>
 - Master plan: <`.plan/master-plan.md` path, or omit>
 - Working plan: <active child plan `.plan/NN-name-plan.md` + current phase/step, or omit>
-- Git branch: <branch> (<clean|dirty>)
+- Git branch: <branch or "none">
 - Python environment: <venv name or "none">
 - Files modified this session: <list>
 - Original request for current session (verbatim): <quote>
@@ -42,19 +42,19 @@ What we're trying to accomplish.
 What's been done so far. Reference file paths with `path:line`.
 
 ## What Went Right
-Approaches that succeeded — keep doing these.
+Approaches that succeeded and relevant to future session — keep doing these.
 
 ## What Didn't Work
-Approaches that failed — do not repeat. Include the reason.
+Approaches that failed and relevant to future session — do not repeat. Include the reason.
 
 ## Next Steps
-Concrete, ordered action items for continuing.
+Concrete, ordered action items for continuing. Confirm these with user.
 
 ## Open Questions
 Decisions the next session needs from the user.
 ```
 
-**Master plan / Working plan** only apply when this session is doing [rolling-plan](../rolling-plan/SKILL.md) work — i.e. a `.plan/` directory exists. If there's no `.plan/`, omit both lines entirely. When it does exist, point Master plan at `.plan/master-plan.md` (drop if there's no master, just a lone child plan) and Working plan at the active child plan with its current phase/step, so the next session can resume against the durable plan.
+**Master plan / Working plan** only apply when this session is doing [rolling-plan](../rolling-plan/SKILL.md) work — i.e. a `.plan/` directory exists. If there's no `.plan/`, omit both lines entirely. When it does exist, point Master plan at `.plan/00-master-plan.md` (drop if there's no master, just a lone child plan) and Working plan at the active child plan with its current phase/step, so the next session can resume against the durable plan. If this session completes a `Step` of working `Plan` (e.g. `.plan/NN-name-plan.md`). See `/rolling-plan` skill for instructions on updating a working `Plan`.
 
 ## Workflow
 
@@ -72,7 +72,7 @@ dest=".handoffs/handoff-$(date +%Y%m%d-%H%M%S).md"
 
 (The script is installed alongside this skill at `~/.claude/skills/handoff/scripts/review-diff.sh`.)
 
-Why the script instead of a plain `Write`: the VS Code extension's native approve/reject diff only renders when Claude Code's `/ide` integration is connected — which fails in some remote/Codex setups. The script sidesteps that by driving the `code` CLI directly, so the diff works regardless. The trade-off is there's no Approve button: the user accepts by editing, saving, and **closing** the diff tab (and cancels by emptying the right pane before closing — exit code 2, nothing written).
+Why the script instead of a plain `Write`: the VS Code extension's native approve/reject diff only renders when Claude Code's `/ide` integration is connected — which fails in some remote/Codex setups. The script sidesteps that by driving the `code` CLI directly, so the diff works regardless. 
 
 The script degrades gracefully:
 - **No `code` CLI / not in VS Code** → it skips the diff and just writes the file. Report the path and let the user open and edit the `.md` directly.
@@ -82,7 +82,7 @@ The script degrades gracefully:
 3. Print the absolute path and the exact pickup command for the next session:
 
 ```
-Read <path> and continue the work described there.
+Read <path>, confirm with user the next steps and continue the work described there.
 ```
 
 If the user passed arguments via `$ARGUMENTS`, treat them as the focus of the next session and tailor the Next Steps section accordingly.

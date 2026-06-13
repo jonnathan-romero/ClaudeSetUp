@@ -5,6 +5,7 @@ Before writing the first plan or master plan, **interview the user properly** �
 ## How to interview
 
 - **One question at a time.** Never batch. Ask, get the answer, let it shape the next question.
+- **AskUserQuestion.** When a question has a small set of discrete answers, ask it with AskUserQuestion — recommended option first, labelled `(Recommended)`; use option descriptions or previews for the pro/cons breakout.
 - **Always recommend an answer.** State your best guess and reasoning with each question; the user corrects or confirms. Don't ask open questions into a void.
 - **Follow the branches.** This is not a fixed list — each answer opens or closes paths. Chase the consequences of an answer before moving on; resolve each branch of the decision tree until the shape is genuinely settled, not just acknowledged.
 - **Push back.** If an answer is vague, contradictory, or smells like premature commitment, say so. If a simpler scope exists, propose it. Surface assumptions and get them confirmed or killed.
@@ -27,9 +28,9 @@ When the ask is small or the user is impatient, collapse to the essentials — g
 
 You will usually learn **more than belongs in the plan right now.** Don't lose the surplus and don't cram it into the plan. Two destinations:
 
-1. Write the full findings to `.plan/interview.md` (through diff-review — substantive). This is the durable record of the shared understanding: everything the interview surfaced, **including** the far-term unknowns, the one-way doors, the deferred "I don't know yet" answers, the out-of-scope list, and the assumptions you confirmed. It is the counterpart to the lean plan — the place the "why" and the "not-yet" live so they survive a context reset. A later session re-orienting reads this alongside the plan files. Keep it updated if the understanding materially changes (e.g. after a re-interview).
+1. Write the full findings to `.plan/00-interview.md` (through diff-review — substantive). This is the durable record of the shared understanding: everything the interview surfaced, **including** the far-term unknowns, the one-way doors, the deferred "I don't know yet" answers, the out-of-scope list, and the assumptions you confirmed. It is the counterpart to the lean plan — the place the "why" and the "not-yet" live so they survive a context reset. A later session re-orienting reads this alongside the plan files and treats these as the preliminary vision that needs to be confirmed. Keep it updated if the understanding materially changes (e.g. after a re-interview).
 
-2. **Capture into the plan only what the near-term needs.** Rolling-wave applies to the interview's output too: detail what's imminent, keep the far term coarse, draw from `interview.md` as the work reaches it.
+2. **Capture into the plan only what the near-term needs.** Rolling-wave applies to the interview's output too: detail what's imminent, keep the far term coarse, draw from `00-interview.md` as the work reaches it.
 
 Map what you keep **in the plan now** to its home:
 

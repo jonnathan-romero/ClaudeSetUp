@@ -5,8 +5,8 @@ Fill these in and write through the diff-review script (substantive edits). Keep
 ## Contents
 
 - [Child plan — `NN-name-plan.md`](#child-plan)
-- [Master plan — `master-plan.md`](#master-plan)
-- [Interview findings — `interview.md`](#interview-findings)
+- [Master plan — `00-master-plan.md`](#master-plan)
+- [Interview findings — `00-interview.md`](#interview-findings)
 
 ---
 
@@ -49,7 +49,7 @@ Fill these in and write through the diff-review script (substantive edits). Keep
 <!-- tag a genuinely irreversible choice: "<choice> (one-way door)" -->
 
 ## Open Questions / Deferred Decisions
-- <decision deliberately deferred> — defer until <trigger / the point it can't wait>
+- <decision deliberately deferred> — defer until <trigger / the point it can't wait (e.g. before/after Step NN)>
 
 ## What Didn't Work
 | Approach | Why it failed |
@@ -70,13 +70,13 @@ Notes on use:
   When done, flip the checkbox and fill in Outcome.
 - **Decisions** records choices already made; the optional `(one-way door)` tag marks an irreversible one that deserved more deliberation. Reversible choices need no tag.
 - **Open Questions / Deferred Decisions** is where "defer to the last responsible moment" becomes a written commitment — name the decision and the trigger that forces it.
-- **What Didn't Work** is the durable, plan-level dead-end record (permanently abandoned approaches for this chunk). Session-level "what just happened" belongs in the handoff.
+- **What Didn't Work** is the durable, plan-level dead-end record (permanently abandoned approaches for this chunk). These are notes that will be useful across future steps or explain important decisions made in prior steps that affects future steps. Session-level "what just happened" belongs in the handoff.
 
 ---
 
 ## Master plan
 
-`master-plan.md`. The durable, slow-changing layer above the child plans. Keep it **short** — if it grows past a screen or two it is absorbing detail that belongs in a child. It **never contains steps**; if you are tempted to write a step here, a child plan is missing.
+`00-master-plan.md`. The durable, slow-changing layer above the child plans. Keep it **short** — if it grows past a screen or two it is absorbing detail that belongs in a child. It **never contains steps**; if you are tempted to write a step here, a child plan is missing.
 
 ```markdown
 # Master Plan: <project>
@@ -112,7 +112,7 @@ Notes on use:
 
 ## Interview findings
 
-`interview.md`. The durable record of the planning interview — the full shared understanding, especially the parts that **don't** belong in the lean plan yet (far-term unknowns, deferred decisions, assumptions). The plan files draw from this; a resuming session reads it for the "why". Keep it honest about what's still unknown — "don't know yet" entries are the point.
+`00-interview.md`. The durable record of the planning interview — the full shared understanding, especially the parts that **don't** belong in the lean plan yet (far-term unknowns, deferred decisions, assumptions). The plan files draw from this; a resuming session reads it for the "why". Keep it honest about what's still unknown or could change based on future findings — "don't know yet" or "not sure yet" entries are the point.
 
 ```markdown
 # Planning Interview — <project>

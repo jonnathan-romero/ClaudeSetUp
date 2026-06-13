@@ -54,20 +54,20 @@ Steps to perform:
 
 1. Remove the step from the current plan's step list; leave a resolved pointer in its place (`- [x] Step N → promoted to Plan NN` — counts as resolved, not pending, for status).
 2. Create the new child plan from the child template, with its own Goal, Phases & Steps, and Seams. **Number it one greater than the highest existing `NN` in `.plan/`** — run `ls .plan/` first to find it, don't assume "current + 1". Numbers are unique IDs, not execution order, so a mid-arc promotion may land at the end of the numbering; that's fine — the master Plans table records the real order.
-3. **If `master-plan.md` does not exist yet, create it now** — you provably have >1 plan (the master plan creation rule). Add a row for the new plan to its Plans table.
+3. **If `00-master-plan.md` does not exist yet, create it now** — you provably have >1 plan (the master plan creation rule). Add a row for the new plan to its Plans table.
 
 **Before** (`02-api-plan.md`, no master plan yet):
 ```markdown
 - [ ] Step 4 — build the whole auth system · kind: build · in-progress
 ```
 
-**After PROMOTE** (`02` updated; new `03-auth-plan.md` created; `master-plan.md` born):
+**After PROMOTE** (`02` updated; new `03-auth-plan.md` created; `00-master-plan.md` born):
 ```markdown
 # 02-api-plan.md
 - [x] Step 4 → promoted to Plan 03 (auth)
 ```
 ```markdown
-# master-plan.md  (newly created)
+# 00-master-plan.md  (newly created)
 ## Plans
 | # | Plan | Status | Delivers |
 |---|------|--------|----------|
