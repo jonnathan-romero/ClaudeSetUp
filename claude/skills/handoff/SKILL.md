@@ -26,8 +26,9 @@ _Generated: <ISO date>_
 
 ## Session Context
 - Working directory: <cwd>
-- Master plan: <`.plan/master-plan.md` path, or omit>
+- Master plan: <`.plan/00-master-plan.md` path, or omit>
 - Working plan: <active child plan `.plan/NN-name-plan.md` + current phase/step, or omit>
+- Active brief / brief result: <`../.briefs/NN-step.md` or `NN-step-result.md`, or omit>
 - Git branch: <branch or "none">
 - Python environment: <venv name or "none">
 - Files modified this session: <list>
@@ -47,6 +48,12 @@ Approaches that succeeded and relevant to future session — keep doing these.
 ## What Didn't Work
 Approaches that failed and relevant to future session — do not repeat. Include the reason.
 
+## User Corrections (verbatim)
+Mid-session course-corrections, quoted exactly. Highest-priority carry-over — if context must be cut, keep these over completed-work detail.
+
+## Decisions Made + Rationale
+Decisions that stuck, each with its *why*. For sessions without a plan. When a `.plan/` exists, promote these to the plan's `Decisions Made` before snapshotting — the plan is the durable home; the handoff is regenerated each reset.
+
 ## Next Steps
 Concrete, ordered action items for continuing. Confirm these with user.
 
@@ -54,7 +61,7 @@ Concrete, ordered action items for continuing. Confirm these with user.
 Decisions the next session needs from the user.
 ```
 
-**Master plan / Working plan** only apply when this session is doing [rolling-plan](../rolling-plan/SKILL.md) work — i.e. a `.plan/` directory exists. If there's no `.plan/`, omit both lines entirely. When it does exist, point Master plan at `.plan/00-master-plan.md` (drop if there's no master, just a lone child plan) and Working plan at the active child plan with its current phase/step, so the next session can resume against the durable plan. If this session completes a `Step` of working `Plan` (e.g. `.plan/NN-name-plan.md`). See `/rolling-plan` skill for instructions on updating a working `Plan`.
+**Master plan / Working plan** only apply when this session is doing [rolling-plan](../rolling-plan/SKILL.md) work — i.e. a `.plan/` directory exists. If there's no `.plan/`, omit both lines entirely. When it does exist, point Master plan at `.plan/00-master-plan.md` (drop if there's no master, just a lone child plan) and Working plan at the active child plan with its current phase/step, so the next session can resume against the durable plan. If this session completed a step of the working plan, update the plan before snapshotting — see the rolling-plan skill above for how to flip the step and fill its `Outcome`, and promote any mid-session decisions into the plan's `Decisions Made`.
 
 ## Workflow
 

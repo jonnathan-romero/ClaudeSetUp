@@ -2,7 +2,7 @@
 
 Fill this in and write through the diff-review script (substantive). Keep it lean — drop unused sections rather than leaving them empty. A long brief degrades; front-load only the unrecoverable.
 
-`NN-name.md`. The contract an autonomous builder + reviewer pair executes.
+`NN-step.md`. The contract an autonomous builder + reviewer pair executes.
 
 ```markdown
 # Brief NN: <name>
@@ -60,7 +60,7 @@ Fill this in and write through the diff-review script (substantive). Keep it lea
 - Build a **compliance matrix**: for each SC-###, the command run, its actual output, and PASS/FAIL.
 - **Evidence required** — no criterion is PASS on inspection alone; cite command output or artifact paths.
 - PASS on all → write-back (flip the step `[x]` + Outcome, for an offloaded step).
-- Any FAIL → stop-and-log to `NN-name-result.md`; nothing written back.
+- Any FAIL → stop-and-log to `NN-step-result.md`; nothing written back.
 ```
 
 ## Notes on use
@@ -70,4 +70,4 @@ Fill this in and write through the diff-review script (substantive). Keep it lea
 - **Operating Mode is `Converge` for any brief born from a rolling-plan step.** Continuous/Supervised are for standalone briefs. A step that needs more than one session is a PROMOTE, not a longer-running brief.
 - **Mutability defaults to `Locked`.** Only loosen a decision to Split/Open when it's genuinely reversible — an unattended agent overriding a one-way door is the worst failure mode.
 - **Drop sections you don't need.** A small brief is Objective + Non-goals + Context + Acceptance criteria + Guardrails. Mode/Mutability/Clarifications appear only when they carry weight.
-- **The result file is the executor's, not the author's.** `NN-name-result.md` holds the reviewer's compliance matrix on PASS, or the stop-and-log report (what was found, why the brief was wrong, proposed options) on FAIL.
+- **The result file is the executor's, not the author's.** `NN-step-result.md` holds the reviewer's compliance matrix on PASS, or the stop-and-log report (what was found, why the brief was wrong, proposed options) on FAIL.

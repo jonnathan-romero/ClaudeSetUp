@@ -1,6 +1,6 @@
 ---
 name: rolling-plan
-description: Progressive (rolling-wave) planning across sessions — maintain a `.plan/` folder of a master plan plus numbered child plans whose steps each fit one ~15K-token session, deferring decisions to the last responsible moment. COLD START (no plan yet) — activate ONLY on an explicit request to plan ("make a plan to build X across sessions", "plan out this repo", "start a rolling plan", "/rolling-plan"). ONGOING — when a plan already exists, or the conversation references a `.plan/` file, a plan step, plan status, or asks to "split that step", "promote that step to its own plan", or "what's next in the plan", stay engaged and keep plan files current. Do NOT self-start planning the user did not ask for; do NOT use for a single-session task with no unknowns; do NOT use for native plan mode (Shift+Tab); do NOT use for fully-specified autonomous agent briefs (this skill is human-in-the-loop); do NOT use for session handoffs (use the handoff skill).
+description: Progressive (rolling-wave) planning across sessions — maintain a `.plan/` folder of a master plan plus numbered child plans whose steps each fit one session under ~150K tokens, deferring decisions to the last responsible moment. COLD START (no plan yet) — activate ONLY on an explicit request to plan ("make a plan to build X across sessions", "plan out this repo", "start a rolling plan", "/rolling-plan"). ONGOING — when a plan already exists, or the conversation references a `.plan/` file, a plan step, plan status, or asks to "split that step", "promote that step to its own plan", or "what's next in the plan", stay engaged and keep plan files current. Do NOT self-start planning the user did not ask for; do NOT use for a single-session task with no unknowns; do NOT use for native plan mode (Shift+Tab); do NOT use for fully-specified autonomous agent briefs (this skill is human-in-the-loop); do NOT use for session handoffs (use the handoff skill).
 ---
 
 # rolling-plan
@@ -24,7 +24,7 @@ This skill is **human-in-the-loop** first. It advises, sizes, and proposes; the 
 | **master-plan** | the whole multi-plan effort | `.plan/00-master-plan.md` | one north-star goal; **never contains steps** |
 | **plan** (child) | one major chunk | `.plan/NN-name-plan.md` | one file (or one folder once it needs scratch) |
 | **phase** | a group of steps within a plan | `## / ###` heading inside the plan | optional |
-| **step** | **one ~15K-token session** of work | a checklist item | **always one session — if it isn't, it was misclassified** |
+| **step** | **one session of work (under ~150K tokens)** | a checklist item | **always one session — if it isn't, it was misclassified** |
 
 A step is either **build** (produces code/artifacts) or **research** (produces a decision or finding; may throw away any code). The step invariant is load-bearing: every other tier is just grouping, but a step must equal one session. When it doesn't, **split** or **promote** it (see below) — never invent a sub-step tier.
 
@@ -65,7 +65,7 @@ The skill is description-triggered: these "verbs" are matched from natural langu
 1. **Interview first (unless already covered).** Before writing the first plan or master plan, run the planning interview in [`references/interview.md`](references/interview.md) — a relentless, grill-me-style interrogation (one question at a time, recommend an answer, follow the branches, push back on vagueness), scaled to the effort. Then capture **only what the near-term needs** into the plan; defer the rest. **Skip the interview** when the conversation has already surfaced the goal/scope/decisions, or when the user handed you a concrete plan/spec and told you what to do.
 2. Decide tier (see "When to create the master plan").
 3. **Add `.plan/` to `.gitignore` first** (before writing any plan file, so it never shows up as untracked). If a repo. This is a write-through — no diff, just the `grep -qsF` guard above.
-4. **Save the interview findings to `.plan/00-interview.md`** — the full shared understanding at the beginning of the process, including the deferred and far-term material that won't go in the plan yet (use the interview reference). Skip if no interview was run (the user gave a ready spec).
+4. **Save the interview findings to `.plan/00-interview.md`** — the full shared understanding at the beginning of the process, including the deferred and far-term material that won't go in the plan yet (use the interview reference). Skip if no interview was run (the user gave a ready spec) — but if the effort is more than one chunk, still capture a one-paragraph chunk-map (the rough arc) and any known seams into the plan before detailing step 1, so the rolling wave keeps a spine and doesn't become "never plan the arc."
 5. Write the plan file(s) from the templates in [`references/templates.md`](references/templates.md), through the diff review (below) — capturing only what the near-term needs.
 
 ### next — work the next step
@@ -88,7 +88,7 @@ When a step is understood well enough to specify fully, you can offload it to an
 
 ### split / promote — a step that won't fit one session
 
-When a step is accreting sub-tasks, has been in-progress past its one session, or research revealed hidden scope, **propose** the fix and let the user confirm (they may also trigger it directly). Decide which by: **fits in one session after splitting → SPLIT; needs its own phases/scans/multiple sessions → PROMOTE.** Full mechanics and worked examples in [`references/operations.md`](references/operations.md).
+When a step is accreting sub-tasks, has been in-progress past its one session, or research revealed hidden scope, **propose** the fix and let the user confirm (they may also trigger it directly). Decide which by: **fits in one session after splitting → SPLIT; needs its own phases/seams/multiple sessions → PROMOTE.** Full mechanics and worked examples in [`references/operations.md`](references/operations.md).
 
 - **SPLIT** — same plan. `Step 4` → `Step 4a`, `4b` (letter-suffix so later steps don't renumber). The finished part is marked done; the remainder continues.
 - **PROMOTE** — lift the step into its own new child plan. Number it **one greater than the highest existing `NN` in `.plan/`** (`ls .plan/` first — numbers are unique IDs, not execution order, so the new plan may land out of arc; record the real order in the master Plans table). Mark the old step resolved with a pointer — `- [x] Step 4 → promoted to Plan NN` (counts as resolved, not pending, for status) — and **create `00-master-plan.md` if it doesn't yet exist** (you now provably have >1 plan), adding a row to its Plans table.
@@ -105,6 +105,8 @@ Report where things stand, at the right altitude:
 
 **Resuming after a context reset** is this operation's big job: when a `.plan/` exists and the user is picking the work back up, run `status` to re-orient in the durable plan + read `.plan/00-interview.md` if you need the "why" behind it (deferred decisions, far-term context, assumptions). (The `handoff` skill covers the **volatile conversation** — uncommitted reasoning, what was mid-edit — by snapshotting it at session end; the plan files themselves are re-read here. If a recent handoff exists, read it first for that conversation context, then run `status`.)
 
+On resume, treat the Goals of **not-yet-executed** steps as provisional — guesses to re-confirm against current reality, not settled spec. By this skill's own principle (we only know the full spec after finishing all prior steps), a downstream Goal written earlier may now be stale.
+
 ## Sizing steps
 
 Aim each step at **one focused session, comfortably under context limits** (well under the window — degradation sets in long before it is full). This is advice, not enforcement: flag a step that smells like more than one session and suggest splitting, but the user decides.
@@ -115,7 +117,7 @@ The invariants are easy to talk yourself out of. When you catch one of these tho
 
 - **"This step is basically one session."** — If it isn't comfortably one session, it's two. **Split or promote it**; don't let it run over.
 - **"I'll write the finding up later."** — Later is a fresh context that won't have it. A research step isn't done until its conclusion is **in the plan**.
-- **"I'll just decide this now to keep moving."** — If the decision is reversible and not yet forced, **defer it** to the Open Questions section; deciding early on partial information is how plans go wrong. (One-way-door decisions are the exception — those deserve up-front deliberation.)
+- **"I'll just decide this now to keep moving."** — If the decision isn't forced yet and you'd be guessing on partial information, **defer it** to the Open Questions section; deciding early on partial information is how plans go wrong. (A one-way door is the exception only when it **blocks downstream work** — pin it early as a Key Bet; otherwise even one-way doors defer to a research/spike at their last responsible moment.)
 - **"I'll flesh out all the steps while I'm here."** — Detail the near term; leave the far term coarse. Over-specifying imputes today's guesses onto work you don't understand yet.
 - **"It's basically done, I'll mark it complete."** — Flip to done only after the Goal's completion check actually holds (verified, not just written).
 - **"I'll start a plan, this task looks big."** — Not on a cold start the user didn't ask to plan. Planning is theirs to invoke.

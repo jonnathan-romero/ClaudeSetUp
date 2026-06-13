@@ -18,7 +18,7 @@ These are the areas to resolve, not a script — weave through them in whatever 
 1. **North-star goal.** What does the whole effort deliver when done? Drive to one sharp sentence. → becomes the master/child **Goal**.
 2. **Chunk boundaries.** The rough major chunks (future child plans) — coarse shape, 2-5 chunks. Probe whether a chunk is really one chunk or several. → drives **tier** (one chunk → master plan) and the master **Plans** table.
 3. **Scary unknowns.** What's most likely to be wrong, hard, or not work? Dig for the real risk, not the comfortable one. → become early **research/spike** steps.
-4. **One-way doors.** Which decisions are expensive/impossible to reverse? Separate these from reversible ones — they get different treatment. → one-way doors go in the master's **Architecture & Key Bets**; reversible decisions get **deferred**.
+4. **One-way doors.** Which decisions are expensive/impossible to reverse? These deserve the most deliberation — and the most information, so decide them at their **last responsible moment** (often via a research/spike step), front-loading into the master's **Architecture & Key Bets** only the ones that **block everything downstream**. Reversible decisions, once forced, are made fast and cheap. → one-way-door key bets to **Architecture & Key Bets**; everything else **deferred** until the work reaches it.
 5. **Out of scope.** What are you explicitly **not** doing? Push for this — it's where scope creep hides. → bounds the plan; note in Goal/Notes.
 6. **Seams (multi-plan only).** What does each chunk hand the next — file, interface, data shape? Pin the contract firmer than the implementation. → master's **Seams Between Plans** and each child's **Seams**.
 

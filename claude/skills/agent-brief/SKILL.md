@@ -1,6 +1,6 @@
 ---
 name: agent-brief
-description: Author a self-contained brief that an autonomous builder+reviewer agent pair executes unattended — front-load the unrecoverable decisions, make every acceptance criterion machine-checkable, and hand it off. AUTHOR — activate on an explicit request to brief, offload, or dispatch work to an agent ("write an agent brief", "brief this out for an agent to build", "hand this to an agent", "offload this to a subagent", "open a GitHub issue for an agent to pick up", "/agent-brief"). The brief can be saved locally to `.briefs/` or pushed as a GitHub issue. FROM A ROLLING-PLAN STEP — activate when the conversation asks to "offload this step", "send this step to an agent", or otherwise hand a `.plan/` step to an autonomous agent; expand the coarse step into a full brief in `.briefs/`. Do NOT use for human-in-the-loop planning across sessions (use rolling-plan); do NOT use for session handoffs / continuity snapshots (use handoff); do NOT use to actually run or babysit a long task on a schedule (this skill authors the brief and sets up the offload, it is not a scheduler).
+description: Author a self-contained brief that an autonomous builder+reviewer agent pair executes unattended — front-load the unrecoverable decisions, make every acceptance criterion machine-checkable, and hand it off. AUTHOR — activate on an explicit request to brief, offload, or dispatch work to an agent ("write an agent brief", "brief this out for an agent to build", "hand this to an agent", "offload this to a subagent", "/agent-brief"). The brief can be saved locally to `.briefs/` or pushed as a GitHub issue. FROM A ROLLING-PLAN STEP — activate when the conversation asks to "offload this step", "send this step to an agent", or otherwise hand a `.plan/` step to an autonomous agent; expand the coarse step into a full brief in `.briefs/`. Do NOT use for human-in-the-loop planning across sessions (use rolling-plan); do NOT use for session handoffs / continuity snapshots (use handoff); do NOT use to run or babysit a long task on a schedule (this skill authors the brief and sets up the offload, it is not a scheduler).
 ---
 
 # agent-brief
@@ -30,7 +30,7 @@ The rule, from the research, is **"right altitude"**: front-load the *unrecovera
 
 ## The brief artifact
 
-Lives at `.briefs/NN-name.md` (local) or as a GitHub issue body (see Destinations). Full template in [`references/template.md`](references/template.md). Sections:
+Lives at `.briefs/NN-step.md` (local) or as a GitHub issue body (see Destinations). Full template in [`references/template.md`](references/template.md). Sections:
 
 | Section | Purpose |
 |---------|---------|
@@ -64,7 +64,7 @@ The brief *content* is identical either way; the destination is only **transport
 
 ### `local` (default)
 
-Write the brief to `.briefs/NN-name.md` (git-ignored). The `.briefs/` folder is the queue; write-back goes to the plan/result file (see `write-back`). Use for in-repo, in-session offload.
+Write the brief to `.briefs/NN-step.md` (git-ignored). The `.briefs/` folder is the queue; write-back goes to the plan/result file (see `write-back`). Use for in-repo, in-session offload.
 
 ### `github` — push the brief as a GitHub issue
 
@@ -95,7 +95,7 @@ The skill is description-triggered; these verbs are matched from natural languag
 1. **Interview** ([`references/interview.md`](references/interview.md)) — relentless, one question at a time, recommend an answer. Its job is to extract a brief whose every acceptance criterion ends in a runnable gate, and to surface every unresolved choice as a `[NEEDS CLARIFICATION]` marker rather than a silent guess.
 2. **Draft and review** the brief through the editable diff (below) — the user accepts the contract before it goes anywhere.
 3. **Set the dials** — Operating Mode + per-decision Mutability.
-4. **Send to a destination** — local `.briefs/NN-name.md` file (default) or a GitHub issue (see Destinations).
+4. **Send to a destination** — local `.briefs/NN-step.md` file (default) or a GitHub issue (see Destinations).
 5. **Hand off** — see execution model.
 
 ### offload — hand a rolling-plan step to an agent
@@ -117,18 +117,18 @@ The brief names roles, not a harness. Run it any of three ways without changing 
 In all three:
 
 ```
-brief (.briefs/NN.md)
+brief (.briefs/NN-step.md)
   ├─ builder  — implements within guardrails; stop-and-log on a falsified assumption
   └─ reviewer — FRESH context, sees only diff + acceptance criteria
         PASS → write-back
-        FAIL → stop-and-log to .briefs/NN-result.md (+ handoff), nothing written back
+        FAIL → stop-and-log to .briefs/NN-step-result.md (+ handoff), nothing written back
 ```
 
 ### write-back — reconcile an offloaded step (from-step only)
 
 The one sanctioned exception to rolling-plan's "a human diff-reviews substantive plan edits" — and it is **gated, not unattended self-certification**. The mechanism depends on the destination:
 
-- **`local`** — Reviewer PASS → the agent flips the step `[x]` and fills its `Outcome` line. Reviewer FAIL → stop-and-log to `.briefs/NN-result.md` (+ a handoff); the step is left untouched.
+- **`local`** — Reviewer PASS → the agent flips the step `[x]` and fills its `Outcome` line. Reviewer FAIL → stop-and-log to `.briefs/NN-step-result.md` (+ a handoff); the step is left untouched.
 - **`github`** — Reviewer PASS gates the merge of the `Closes #N` PR; the merge/issue-close is the signal to flip the step `[x]` and fill `Outcome` from the PR. Reviewer FAIL → `request-changes`, issue stays open, step stays in-progress.
 
 Either way the human sees the result on the next rolling-plan `status`, and the agent never flips a step on its own say-so — an independent reviewer gates it.
