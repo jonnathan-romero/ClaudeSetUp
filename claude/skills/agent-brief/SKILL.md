@@ -40,15 +40,16 @@ Lives at `.briefs/NN-step.md` (local) or as a GitHub issue body (see Destination
 | **Acceptance criteria** | numbered `SC-###`, `WHEN/THEN/AND`, measurable, **each ending in a runnable gate** |
 | **How to implement** | the elastic section — sub-instructions the agent may expand on within one bounded run |
 | **Guardrails** | 3-tier **Always / Ask-first / Never** + stop conditions (max iterations) |
-| **Operating Mode + Mutability** | the autonomy dials (below) |
+| **Operating Mode, Route + Mutability** | the autonomy dials + the bound execution route (below) |
 | **`[NEEDS CLARIFICATION: …]`** | anything the interview did not resolve — a brief with open markers is **not ready to offload** |
 | **Verification protocol** | reviewer builds a scenario→evidence compliance matrix; evidence required, no self-grading |
 
-## The two dials
+## The dials
 
-**Operating Mode** — how long the agent runs:
+**Operating Mode** — how long the agent runs and how it handles being blocked:
 
-- **Converge** *(default; forced for from-step briefs)* — build until the criteria pass, then stop. One bounded session.
+- **Converge** *(default; from-step briefs use Converge or Escalate-on-Stuck)* — build until the criteria pass, then stop. One bounded session.
+- **Escalate-on-Stuck** — Converge with one escape valve: on an *unanticipated* blocker (not a known locked decision — that's Mutability), raise a **single targeted question**, block for a human answer, then resume the same session. If no human is reachable within the stop condition, it degrades to stop-and-log. *Event*-triggered, unlike Supervised's *predefined* checkpoints.
 - **Continuous** *(standalone briefs only)* — loop until a machine-checkable stopping condition (`score ≥ 90`, `5 iterations no improvement`). Unbounded; never from a single plan step.
 - **Supervised** — run autonomously but pause at predefined checkpoints for a human, then continue.
 
@@ -57,6 +58,14 @@ Lives at `.briefs/NN-step.md` (local) or as a GitHub issue body (see Destination
 - **Locked** — halt and stop-and-log (the safe default for one-way doors).
 - **Split** — adapt within the guardrails, log the override, continue (reversible operational fixes).
 - **Open** — the agent decides freely (genuinely reversible, low-stakes choices).
+
+**Execution route** *(binding)* — which harness runs the brief, chosen in the interview. The brief's roles and criteria stay harness-independent, but this field is an **instruction the executor follows**:
+
+- **Two subagents** — a builder agent + a separate reviewer agent, inline in the current session. Good for a small Converge brief.
+- **Workflow** — a scripted builder → reviewer → loop-until-criteria. Good when you want a real retry loop or are running several briefs.
+- **Fresh session** — a new session reads the brief, builds, and spawns its own reviewer. Good for a large brief that wants a clean context.
+
+Default the route from the Operating Mode: Continuous/Escalate-on-Stuck ⇒ Workflow; small Converge ⇒ Two subagents; large ⇒ Fresh session. **Graceful fallback:** if the bound harness isn't available, the executor falls back to another route, runs the brief, and records the substitution in the result — a binding must never strand the brief.
 
 ## Destinations — where the brief goes
 
@@ -94,27 +103,27 @@ The skill is description-triggered; these verbs are matched from natural languag
 
 1. **Interview** ([`references/interview.md`](references/interview.md)) — relentless, one question at a time, recommend an answer. Its job is to extract a brief whose every acceptance criterion ends in a runnable gate, and to surface every unresolved choice as a `[NEEDS CLARIFICATION]` marker rather than a silent guess.
 2. **Draft and review** the brief through the editable diff (below) — the user accepts the contract before it goes anywhere.
-3. **Set the dials** — Operating Mode + per-decision Mutability.
+3. **Set the dials** — Operating Mode, the bound Execution route, and per-decision Mutability.
 4. **Send to a destination** — local `.briefs/NN-step.md` file (default) or a GitHub issue (see Destinations).
 5. **Hand off** — see execution model.
 
 ### offload — hand a rolling-plan step to an agent
 
-1. **The step is the unit.** A from-step brief is **Converge, one bounded session.** The elasticity lives *inside* the brief's How-to-implement section, not in the run length.
+1. **The step is the unit.** A from-step brief is **one bounded session — Converge (or Escalate-on-Stuck, which adds an ask-on-blocker escape valve).** The elasticity lives *inside* the brief's How-to-implement section, not in the run length.
 2. **Expand** the coarse step into a full brief, drawing the "why" from `.plan/00-interview.md` and the locked choices from the plan's `Decisions Made`. Run the interview to confirm all previous decisions and for what isn't already settled.
 3. **Send to a destination** — write `.briefs/NN-step.md` and link it from the step, **or** push it as a GitHub issue and link the issue URL from the step (see Destinations).
 4. **If it won't fit one session** — that is rolling-plan's **PROMOTE** signal, not a license to grow the brief unbounded. Promote the step to its own plan first.
 5. **Hand off**, then reconcile via write-back.
 
-### execute — the builder + reviewer model (harness-agnostic)
+### execute — the builder + reviewer model
 
-The brief names roles, not a harness. Run it any of three ways without changing the artifact:
+Run the brief the way its **Execution route** binds it (see The dials). The three routes share one model — a builder, then an independent reviewer — and the artifact doesn't change between them:
 
+- **Two subagents** — a builder agent and a separate reviewer agent, inline.
 - **Workflow** — builder phase → reviewer phase → loop-until-criteria.
-- **Two subagents** — a builder agent and a separate reviewer agent.
-- **One fresh session** — reads the brief, builds, spawns its own reviewer subagent.
+- **Fresh session** — reads the brief, builds, spawns its own reviewer subagent.
 
-In all three:
+If the bound route's harness is unavailable, fall back to another, run it, and note the substitution in the result. In all three:
 
 ```
 brief (.briefs/NN-step.md)

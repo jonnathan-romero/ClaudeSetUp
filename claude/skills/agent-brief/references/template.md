@@ -39,11 +39,14 @@ Fill this in and write through the diff-review script (substantive). Keep it lea
 - 🚫 Never: <e.g. commit secrets, force-push, edit vendored code, touch <area>>
 - Stop condition: <max iterations / wall-clock — a hard ceiling on the run>
 
-## Operating Mode & Mutability
-- **Operating Mode:** Converge | Continuous | Supervised
-    <!-- Converge = build until criteria pass, then stop (default; REQUIRED for from-step briefs).
+## Operating Mode, Route & Mutability
+- **Operating Mode:** Converge | Escalate-on-Stuck | Continuous | Supervised
+    <!-- Converge = build until criteria pass, then stop (default; from-step briefs use Converge or Escalate-on-Stuck).
+         Escalate-on-Stuck = Converge, but on an UNANTICIPATED blocker ask ONE targeted question, block for the answer, then resume; degrades to stop-and-log if no human answers within the stop condition.
          Continuous = loop until a stopping condition (standalone only); state it: <e.g. score ≥ 90>.
          Supervised = pause at checkpoints; list them: <checkpoint 1, …>. -->
+- **Execution route (binding):** Two subagents | Workflow | Fresh session
+    <!-- How this brief is to be run; the executor MUST use it. If that harness is unavailable, fall back, run it, and note the substitution in the result. Default from the mode: Continuous/Escalate-on-Stuck ⇒ Workflow; small Converge ⇒ Two subagents; large ⇒ Fresh session. -->
 - **Locked decisions & their mutability:**
     | Decision | Mutability | If wrong |
     |----------|------------|----------|
@@ -67,7 +70,7 @@ Fill this in and write through the diff-review script (substantive). Keep it lea
 
 - **Objective's `Why` is not optional.** It's the alignment anchor when the literal instructions don't fit reality.
 - **Acceptance criteria are the contract.** If a `Gate:` line is missing or unrunnable, the brief isn't finished — see the gate test in [`interview.md`](interview.md).
-- **Operating Mode is `Converge` for any brief born from a rolling-plan step.** Continuous/Supervised are for standalone briefs. A step that needs more than one session is a PROMOTE, not a longer-running brief.
+- **A from-step brief runs `Converge`** (or **`Escalate-on-Stuck`**, Converge plus an ask-on-blocker escape valve) — both are one bounded session. Continuous/Supervised are for standalone briefs. A step that needs more than one session is a PROMOTE, not a longer-running brief.
 - **Mutability defaults to `Locked`.** Only loosen a decision to Split/Open when it's genuinely reversible — an unattended agent overriding a one-way door is the worst failure mode.
-- **Drop sections you don't need.** A small brief is Objective + Non-goals + Context + Acceptance criteria + Guardrails. Mode/Mutability/Clarifications appear only when they carry weight.
+- **Drop sections you don't need.** A small brief is Objective + Non-goals + Context + Acceptance criteria + Guardrails. Mode/Route/Mutability/Clarifications appear only when they carry weight.
 - **The result file is the executor's, not the author's.** `NN-step-result.md` holds the reviewer's compliance matrix on PASS, or the stop-and-log report (what was found, why the brief was wrong, proposed options) on FAIL.
