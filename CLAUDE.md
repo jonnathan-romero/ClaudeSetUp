@@ -7,9 +7,14 @@ A dotfiles-style repository for Claude Code configuration. It stores the user's 
 ## Layout
 
 - `claude/` — source tree mirrored into `~/.claude/` (CLAUDE.md, settings.json, skills/, agents/, statusline-command.sh)
+- `claude/README.md` — index of every agent and skill (tables) plus the planning-triad guide
 - `marketplaces.txt` — one `name=org/repo` per line
 - `plugins.txt` — one `plugin-name@marketplace-name` per line
 - `install.sh` — deploy script
+
+> **When you add, remove, or rename an agent (`claude/agents/*.md`) or skill
+> (`claude/skills/<name>/`), update the matching table in [`claude/README.md`](claude/README.md)**
+> so the index stays in sync.
 
 ## Install
 
