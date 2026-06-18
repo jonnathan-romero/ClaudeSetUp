@@ -1,7 +1,7 @@
 # `~/.claude` source tree
 
 This directory is mirrored into `~/.claude/` by [`install.sh`](../install.sh). It holds the
-custom **agents** and **skills** that extend Claude Code, plus the global `CLAUDE.md`,
+custom **agents**, **skills**, and **hooks** that extend Claude Code, plus the global `CLAUDE.md`,
 `settings.json`, and `statusline-command.sh`.
 
 - **Agents** (`agents/*.md`) — subagents the main loop delegates to. Each runs in its own
@@ -9,9 +9,12 @@ custom **agents** and **skills** that extend Claude Code, plus the global `CLAUD
   delegate based on the description.
 - **Skills** (`skills/<name>/SKILL.md`) — capabilities and domain knowledge the model loads
   on demand. Description-triggered, or invoked directly as `/<name>`.
+- **Hooks** (`hooks/*.sh`) — shell scripts Claude Code fires automatically on tool/agent
+  lifecycle events (wired up in `settings.json`). Not model-invoked; best-effort (each exits 0
+  so it never blocks the turn).
 
 > **Maintaining this file:** the tables below are hand-maintained. When you add, remove, or
-> rename an agent or skill, update the matching table. This rule is also recorded in the
+> rename an agent, skill, or hook, update the matching table. This rule is also recorded in the
 > project-root [`CLAUDE.md`](../CLAUDE.md).
 
 ---
@@ -30,6 +33,20 @@ return (or write) a report; they never edit the files they audit.
 | **docs-drift-auditor** | Finds where prose docs (README, CLAUDE.md, install scripts, docstrings, comments) disagree with what the code actually does. Flags each with a verbatim doc-quote + code-quote. | Read, Grep, Glob, Bash, Write |
 | **memory-auditor** | Audits the persistent memory store (`MEMORY.md` index + `memory/*.md` notes) for stale facts, contradictions, duplicates, broken `[[links]]`, index⇄folder drift, and frontmatter breakage. | Read, Grep, Bash, Write |
 | **web-researcher** | Researches a topic across many web pages and returns thorough findings with verbatim quotes + source URLs for every claim, keeping large page dumps out of the main context. | WebFetch, WebSearch, Read, Write, Bash |
+
+---
+
+## Hooks
+
+Shell scripts in `hooks/`, fired automatically by Claude Code on tool/agent lifecycle events
+(registered in [`settings.json`](settings.json)). They are mirrored into `~/.claude/hooks/` with
+delete semantics, exactly like `agents/` and `skills/`.
+
+| Hook | Event (matcher) | What it does |
+|------|-----------------|--------------|
+| **black-format.sh** | PostToolUse (`Write\|Edit\|MultiEdit`) | Formats edited `.py`/`.pyi` files with Black — prefers a `black` on `PATH`, falls back to `uvx black`. |
+| **save-agent-prompts.sh** | PreToolUse (`Task\|Agent`) | Saves each subagent's prompt + metadata as a timestamped markdown file under `<project>/.agents/`, named by `tool_use_id`. Appends `.agents/` to the repo-root `.gitignore` (with a trailing-newline guard) and writes files owner-only (`umask 077`). |
+| **save-agent-results.sh** | PostToolUse (`Task\|Agent`) | Appends the finished subagent's returned result to that same `.agents/` file (matched by `tool_use_id`); if no prompt file exists, writes a fresh combined prompt+result record. |
 
 ---
 

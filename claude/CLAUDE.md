@@ -26,6 +26,13 @@
 - For multi-step tasks, state a brief plan: step → verify for each.
 - For large implementations, suggest phased multi-agent approaches (competitive, collaborative, or mixed). Use separate branches for parallel agent work.
 
+## Response Style
+- Lead with the answer. Conclusion first, then only the reasoning needed to trust it.
+- Shortest complete response. Default to a few sentences or ≤5 bullets for simple things; expand only when the task is genuinely complex, multi-step, or I ask for detail.
+- Brevity governs the final answer, not whether you reason the problem through. On hard problems, work it out fully, then give a tight answer — don't skip steps to look concise.
+- Prose over bullet-fragments for explanations. Reserve markdown for code, real lists, and headings.
+- No preamble or postamble: skip "Here is…", "Based on…", "I hope this helps"; don't restate my question.
+
 ## Research Agents
 - When `web-researcher`, `doc-researcher`, or `codebase-explorer` returns a saved report/map path, ask whether to load the full file into context before continuing. `Read` the file only if the answer is yes — the digest already answers most questions; the full file is for context engineering (a clean synthesis is far cheaper to load than the raw sources). On a pure-locate task answered inline with no file, there's nothing to offer.
 
