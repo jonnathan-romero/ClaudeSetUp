@@ -1,6 +1,6 @@
 ---
 name: claude-md-architect
-description: Author, audit, or improve CLAUDE.md files, and route new rules to the right Claude Code primitive (CLAUDE.md vs Skill vs hook vs slash command vs subagent). ALWAYS trigger when the user writes/updates/audits/reviews a CLAUDE.md or memory file, mentions `CLAUDE.md` or `claude.md`, asks "should this go in CLAUDE.md", "where should this rule live", or "is this a skill or a hook", or bootstraps Claude Code memory in a new repo. Covers size limits (<200 lines), structure, anti-patterns, security (malicious-CLAUDE.md / CVE-2025-59536 class), AGENTS.md interop, and Python-first language patterns.
+description: Author, audit, or improve CLAUDE.md files, and route new rules to the right Claude Code primitive (CLAUDE.md vs Skill vs hook vs slash command vs subagent). ALWAYS trigger when the user writes/updates/audits/reviews a CLAUDE.md or memory file, mentions `CLAUDE.md` or `claude.md`, asks "should this go in CLAUDE.md", "where should this rule live", or "is this a skill or a hook", or bootstraps Claude Code memory in a new repo. Covers size limits (<200 lines), structure, anti-patterns, security (malicious-CLAUDE.md / CVE-2025-59536 class), AGENTS.md interop, and Python-first language patterns. Do NOT use to author a skill or subagent itself — route to `skill-best-practices` or `agent-best-practices` instead.
 allowed-tools: Read, Grep, Glob
 ---
 
@@ -37,7 +37,7 @@ If ambiguous, ask the user which mode.
 2. Read `references/checklist.md` and `references/security.md` — both, always.
 3. Check, in this order, and report findings by severity:
    - **Blocker** — secrets in file; malicious-CLAUDE.md patterns (CVE class); broken `@` imports; instructions Claude can't possibly follow.
-   - **Major** — over 200 lines; internally contradictory rules; vague directives; kitchen-sink content; rules that belong in hooks instead.
+   - **Major** — over 200 lines; contradictory rules *within or across* files (they concatenate, never override — conflicts aren't resolved by precedence); vague directives; kitchen-sink content; rules that belong in hooks instead.
    - **Minor** — stylistic drift; redundant rules already in the model's defaults; prose that should be bullets.
 4. Output: numbered findings with line refs, then a proposed diff.
 

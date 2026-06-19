@@ -68,13 +68,18 @@ Decisions the next session needs from the user.
 Do not draft the handoff inline in chat. Instead write the proposed content to a temp file and run the bundled `scripts/review-diff.sh`, which opens an **editable side-by-side diff in VS Code** and blocks until the user closes the tab — the user edits the right (proposed) pane directly, and whatever they leave there is saved to the final `.handoffs/` path. This is the review surface; don't ask for changes in chat.
 
 ```bash
-proposed=$(mktemp -t handoff-XXXX.md)
-cat > "$proposed" <<'EOF'
-<full handoff document here>
-EOF
+# 1. create an empty temp file for the draft
+mkdir -p .handoffs
+mktemp -t handoff-XXXX.md          # prints e.g. /tmp/handoff-ab12.md
 
-dest=".handoffs/handoff-$(date +%Y%m%d-%H%M%S).md"
-~/.claude/skills/handoff/scripts/review-diff.sh "$dest" "$proposed"
+# 2. (Write tool) write the full handoff document to that temp path —
+#    NOT a bash heredoc: the doc contains backticks, `$`, and ``` fences that a
+#    quoted heredoc mangles, and a stray `EOF` line silently truncates it.
+
+# 3. open the review diff (compute the timestamped dest inline)
+~/.claude/skills/handoff/scripts/review-diff.sh \
+  ".handoffs/handoff-$(date +%Y%m%d-%H%M%S).md" \
+  /tmp/handoff-ab12.md             # ← the path mktemp printed in step 1
 ```
 
 (The script is installed alongside this skill at `~/.claude/skills/handoff/scripts/review-diff.sh`.)
@@ -84,7 +89,7 @@ Why the script instead of a plain `Write`: the VS Code extension's native approv
 The script degrades gracefully:
 - **No `code` CLI / not in VS Code** → it skips the diff and just writes the file. Report the path and let the user open and edit the `.md` directly.
 
-1. Write the full draft to a temp file and run `scripts/review-diff.sh <dest> <proposed>`.
+1. Create a temp file with `mktemp`, write the full draft into it **with the Write tool** (not a heredoc), then run `scripts/review-diff.sh <dest> <proposed>`.
 2. The user reviews/edits in the VS Code diff (or, in the fallback, edits the saved `.md` directly).
 3. Print the absolute path and the exact pickup command for the next session:
 

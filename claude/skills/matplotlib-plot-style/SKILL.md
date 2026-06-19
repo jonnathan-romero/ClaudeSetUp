@@ -1,14 +1,11 @@
 ---
 name: matplotlib-plot-style
 description: Apply the user's matplotlib plot styling preferences whenever writing plotting code. ALWAYS use this skill when generating matplotlib charts, figures, plots, or visualizations. Trigger on any code that imports matplotlib, creates figures, or plots data — even if the user doesn't explicitly mention styling.
-paths:
-  - "**/*.py"
-  - "**/*.ipynb"
 ---
 
 # Matplotlib Plot Style
 
-Apply these settings to ALL matplotlib code. Use `plt.rc_context(EQ_RC)` for single plots or `plt.rcParams.update(EQ_RC)` at the top of scripts/notebooks.
+Apply these settings to ALL matplotlib code. Use `plt.rc_context(PLOT_RC)` for single plots or `plt.rcParams.update(PLOT_RC)` at the top of scripts/notebooks.
 
 ## Golden Reference
 
@@ -18,16 +15,16 @@ Every plot should follow this pattern:
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
-plt.rcParams.update(EQ_RC)
+plt.rcParams.update(PLOT_RC)
 palette = PALETTES["muted_classic"]
 
 fig, ax = plt.subplots(figsize=(10, 6))
-ax.plot(dates, strategy, color=palette[0], linewidth=1.5, label="Strategy")
-ax.plot(dates, benchmark, color=palette[1], linewidth=1.5, label="Benchmark")
+ax.plot(x, series_a, color=palette[0], linewidth=1.5, label="Series A")
+ax.plot(x, series_b, color=palette[1], linewidth=1.5, label="Series B")
 ax.axhline(0, color="#444444", linewidth=0.5, linestyle="--")
-ax.set_title("Cumulative Returns")
-ax.set_xlabel("Trading Days")
-ax.set_ylabel("Growth of $1")
+ax.set_title("Series Comparison")
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
 ax.legend()
 fig.savefig("chart.png")
 ```
@@ -37,7 +34,7 @@ fig.savefig("chart.png")
 ALWAYS apply this full dict. Do NOT cherry-pick or omit settings.
 
 ```python
-EQ_RC = {
+PLOT_RC = {
     # Background
     "figure.facecolor": "#ffffff",
     "axes.facecolor": "#ffffff",
@@ -77,14 +74,14 @@ EQ_RC = {
     "savefig.transparent": False,
     "savefig.bbox": "tight",
     "savefig.pad_inches": 0.1,
-    # Axis formatting — critical for financial charts
+    # Axis formatting
     "axes.formatter.useoffset": False,
     "axes.formatter.use_mathtext": True,
     "axes.unicode_minus": True,
     # Font embedding for PDF/PS export
     "pdf.fonttype": 42,
     "ps.fonttype": 42,
-    # Performance for large time series
+    # Performance for large datasets
     "agg.path.chunksize": 20000,
     "path.simplify": True,
 }
@@ -129,9 +126,9 @@ PALETTES = {
 
 ### Palette selection
 
-- **Financial/analytical** (returns, drawdowns, factors): `deep_ocean`, `nordic`, `cool_steel`
+- **Analytical/data-heavy** (line charts, scatter): `deep_ocean`, `nordic`, `cool_steel`
 - **Presentations/dashboards**: `muted_classic`, `bold_primary`, `sunset`
-- **Multi-category bars** (sectors, months): `jewel_tones`, `muted_classic`
+- **Multi-category bars** (categories, groups): `jewel_tones`, `muted_classic`
 - **2-series comparison**: use colors 0 and 1 — they contrast well in every palette
 - **Positive/negative bars**: color 0 for positive, color 1 for negative
 
@@ -177,20 +174,20 @@ ax.xaxis.set_major_locator(mdates.AutoDateLocator())
 ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(ax.xaxis.get_major_locator()))
 ```
 
-## Multi-Panel Tearsheets
+## Multi-Panel Figures
 
-ALWAYS use `sharex=True` for stacked time series panels. Give the top panel more height.
+ALWAYS use `sharex=True` for stacked panels that share an x-axis. Give the most important panel more height.
 
 ```python
 fig, axes = plt.subplots(3, 1, figsize=(12, 10), sharex=True,
                          gridspec_kw={"height_ratios": [3, 1, 1]})
 ```
 
-Use bold suptitle + gray date subtitle:
+Use a bold suptitle + gray subtitle:
 
 ```python
-fig.suptitle("Strategy Tearsheet", fontweight="bold", fontsize=14)
-axes[0].set_title("2020-01-01 to 2024-12-31", fontsize=10, color="gray")
+fig.suptitle("Multi-Panel Figure", fontweight="bold", fontsize=14)
+axes[0].set_title("subtitle / date range", fontsize=10, color="gray")
 ```
 
 ## Legend Readability
@@ -205,9 +202,9 @@ ax.legend(frameon=True, facecolor="white", edgecolor="#cccccc", framealpha=0.9)
 
 For dense data (>10K points):
 - Use `rasterized=True` on scatter plots and heatmaps to keep file sizes manageable
-- The `agg.path.chunksize` setting in EQ_RC prevents rendering crashes
+- The `agg.path.chunksize` setting in PLOT_RC prevents rendering crashes
 
 ## Markers
 
-- Monthly or less frequent data: add markers (`o`, `s`, `^`, `D`)
-- Daily or higher frequency: NEVER add markers (too dense)
+- Sparse data (few points per series): add markers (`o`, `s`, `^`, `D`)
+- Dense data (many points per series): NEVER add markers (too dense)

@@ -55,6 +55,11 @@ If yes — and timing matters — it's a **slash command**.
 Slash commands fire only when typed. Best when the action has side
 effects you don't want the model deciding to take.
 
+Note: custom commands have **merged into skills**. `.claude/commands/x.md`
+and `.claude/skills/x/SKILL.md` both create `/x`; legacy command files
+still work. For a side-effect workflow, author it as a skill with
+`disable-model-invocation: true`.
+
 ### 5. Is it a long task that would bloat the main context?
 
 If yes — and it's self-contained — it's a **subagent**.
@@ -87,6 +92,7 @@ git-tracked and team-shared.
 
 ## References
 
+- https://code.claude.com/docs/en/features-overview (official "which primitive" decision page)
 - https://code.claude.com/docs/en/skills.md
-- https://code.claude.com/docs/en/hooks
+- https://code.claude.com/docs/en/hooks-guide
 - https://code.claude.com/docs/en/sub-agents.md

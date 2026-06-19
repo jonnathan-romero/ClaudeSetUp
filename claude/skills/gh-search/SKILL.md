@@ -32,7 +32,7 @@ Every `gh search` subcommand accepts a free-text query, flag-style filters (`--l
 gh search repos "vim plugin" --language=go --stars=">100" --sort=stars --limit=20
 gh search repos --topic=cli --topic=rust --sort=stars            # AND of topics
 gh search repos --owner=microsoft --language=typescript --archived=false
-gh search repos terminal --match=name,description --pushed=">2025-01-01"   # active only
+gh search repos terminal --match=name,description --updated=">2025-01-01"   # active only
 ```
 
 Return a clean shortlist instead of raw output — request JSON and format it:
@@ -51,7 +51,7 @@ Key repo qualifiers: `stars:` `forks:` `language:` `topic:` `pushed:` `created:`
 
 ```bash
 gh search code "createServer" --language=js --limit=30
-gh search code "boto3.client" --owner=aws --filename=*.py
+gh search code "boto3.client" --owner=aws --extension=py
 gh search code "TODO" --repo=cli/cli --match=file
 ```
 
@@ -85,7 +85,7 @@ Once you have an `owner/name`, evaluate it without cloning:
 
 ```bash
 gh repo view cli/cli                              # README + stats in the terminal
-gh repo view cli/cli --json description,stargazersCount,pushedAt,licenseInfo,primaryLanguage
+gh repo view cli/cli --json description,stargazerCount,pushedAt,licenseInfo,primaryLanguage
 gh api repos/cli/cli/readme --jq '.content' | base64 -d   # raw README
 gh api repos/cli/cli/contents --jq '.[].name'             # top-level file/dir listing
 gh api repos/cli/cli/commits --jq '.[0].commit.author.date'   # last commit date (activity)

@@ -1,7 +1,7 @@
 ---
 name: colors
 description: 'Generates and critiques color palettes — UI scales, brand palettes, dataviz colormaps — using OKLCh and color theory. ALWAYS trigger when the user mentions palette, color scheme, design tokens, brand colors, accent color, OKLCh, WCAG contrast, APCA, color blindness, dark mode colors, Tailwind colors, Radix Colors, Material Design 3, ColorBrewer, viridis, matplotlib colormap, or asks to "build a palette around #XXXXXX", "extract colors from this image", "is this palette accessible", or "what colors should I use for a [adjective] [product]". Computes via coloraide; explains color-theory reasoning. Do NOT trigger for image color editing in Photoshop, isolated hex lookups, or pure CSS layout questions unrelated to color choice.'
-allowed-tools: Bash(uv run *), Read, Write, Glob
+allowed-tools: Bash(uv run *), Read, Write
 ---
 
 # Colors
@@ -31,9 +31,9 @@ The skill uses the same OKLCh + accessibility machinery across all modes. The di
 **Steps:**
 1. Convert the seed to OKLCh; record its L\*, C\*, h.
 2. Decide where the seed sits in the scale. Tailwind, Radix, and Material 3 all place named brand near step 9, not step 5; mirror that unless told otherwise. The seed lives at whatever L\* it lives at — the rest of the scale extends from there. See [references/case-studies.md](references/case-studies.md).
-3. Run the generator:
+3. Run the generator. It emits the palette JSON to stdout — redirect it to `palette.json`, which the downstream scripts read:
    ```
-   uv run scripts/generate_scale.py --seed "#3B82F6" --name primary
+   uv run scripts/generate_scale.py --seed "#3B82F6" --name primary > palette.json
    ```
    Add `--dark` for the dark-mode pairing. Add `--system tailwind` (default), `--system radix`, or `--system material` to bias step-count and chroma curve to that convention.
 
@@ -89,7 +89,7 @@ If the user asks for code: see [references/output-formats.md](references/output-
 **Goal:** find what's wrong with a palette and propose fixes.
 
 **Steps:**
-1. Parse the palette into a structured list (hex + role if labeled).
+1. Parse the palette and write it to `palette.json` in the shape the scripts expect: `{"name": "...", "steps": [{"hex": "#...", "role": "..."}, ...]}` (only `hex` is required per step). This is the same schema `generate_scale.py` emits.
 2. Run the contrast matrix against expected pairings:
    ```
    uv run scripts/check_contrast.py --palette palette.json
@@ -118,7 +118,7 @@ If the user asks for code: see [references/output-formats.md](references/output-
 3. Filter near-duplicates (script does this with ΔE2000 ≥ 8 by default).
 4. Sort by hue (default) or luminance (`--sort lstar`).
 5. If the user wants a UI palette built around the extraction, pick the most-saturated cluster as the seed and run Mode A.
-6. If the user wants a dataviz palette, pass to Mode E with `--from-extraction`.
+6. If the user wants a dataviz palette, hand off to Mode E: read the hue(s) of the dominant extracted cluster(s) from the output and pass them as `--hue` (sequential) or `--hues` (diverging) to `dataviz_palette.py`.
 
 ---
 

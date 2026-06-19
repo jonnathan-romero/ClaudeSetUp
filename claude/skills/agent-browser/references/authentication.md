@@ -6,6 +6,7 @@ Login flows, session persistence, OAuth, 2FA, and authenticated browsing.
 
 ## Contents
 
+- [Auth Vault (recommended for credentials)](#auth-vault-recommended-for-credentials)
 - [Import Auth from Your Browser](#import-auth-from-your-browser)
 - [Persistent Profiles](#persistent-profiles)
 - [Session Persistence](#session-persistence)
@@ -18,6 +19,23 @@ Login flows, session persistence, OAuth, 2FA, and authenticated browsing.
 - [Cookie-Based Auth](#cookie-based-auth)
 - [Token Refresh Handling](#token-refresh-handling)
 - [Security Best Practices](#security-best-practices)
+
+## Auth Vault (recommended for credentials)
+
+When you have a username and password, the auth vault is the preferred path: it stores credentials in agent-browser's own store and replays the login on demand, so the password is piped via stdin rather than passed as a visible argument and never enters the agent transcript.
+
+```bash
+# Save credentials once (password read from stdin, not the command line)
+echo "$APP_PASSWORD" | agent-browser auth save myapp \
+    --url https://app.example.com/login \
+    --username "$APP_USERNAME" \
+    --password-stdin
+
+# Replay the saved login whenever you need an authenticated browser
+agent-browser auth login myapp
+```
+
+Because the password arrives via `--password-stdin`, it stays out of shell history and the agent transcript. Prefer this over hardcoding `fill @e2 "password"` in scripts. To encrypt the stored credentials at rest, set `AGENT_BROWSER_ENCRYPTION_KEY` (see [Security Best Practices](#security-best-practices)).
 
 ## Import Auth from Your Browser
 

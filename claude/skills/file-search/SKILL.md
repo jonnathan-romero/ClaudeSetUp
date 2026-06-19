@@ -10,11 +10,12 @@ This skill covers the gap the built-in tools leave open: **searching the *conten
 | Goal | Use | Notes |
 |---|---|---|
 | Search **inside** pdf/docx/odt/epub/**xlsx/pptx**, zip/tar/gz, sqlite | **`rga`** (this skill) | the real gap — grep can't read these |
-| Find files **by name/path/extension** | **`fd`** (this skill) | matches names, not contents |
+| Select files to **pipe into `rga`**, or filter by hidden/gitignored/type | **`fd`** (this skill) | `-X rga` chains the two; `-H -I -t` go beyond Glob |
+| Find files **by name/path/extension** | the built-in **Glob** tool | returns paths directly — don't shell out to `fd` to duplicate it |
 | Search **source code / plaintext** | the built-in **Grep** tool | already ripgrep under the hood — don't shell out to `rg` to duplicate it |
 | Open one **known** pdf/image | the built-in **Read** tool | Read renders a single PDF; it can't search across many |
 
-**Decision rule:** content of a *document/archive* → `rga`. A *filename* → `fd`. Plain *code/text* contents → just use the **Grep** tool, not this skill.
+**Decision rule:** content of a *document/archive* → `rga`. A *filename* → the **Glob** tool (use `fd` only to chain into `rga` or filter hidden/gitignored/type). Plain *code/text* contents → the **Grep** tool. The last two aren't this skill.
 
 ## Search inside documents and archives — `rga`
 
@@ -43,15 +44,16 @@ Supported here (verified working on this machine):
 
 ## Find files by name/path — `fd`
 
+For a plain "find files named X" lookup, the built-in **Glob** tool already does it — don't shell out to `fd` to duplicate it. `fd` earns its place for what Glob can't: filtering on hidden/gitignored/type, and building a file list to pipe into `rga` (next section).
+
 ```bash
-fd report                  # any path containing "report"
 fd -e pdf -e docx          # by extension
 fd -g '**/*.test.ts'       # glob mode
 fd -H -I node_modules      # include hidden + gitignored
 fd -t f pattern            # files only (-t d for dirs)
 ```
 
-`fd` matches the **name/path**, never contents — and is the cleanest way to build a file list to feed into a content search.
+`fd` matches the **name/path**, never contents.
 
 ## Combine: select with `fd`, search inside with `rga`
 

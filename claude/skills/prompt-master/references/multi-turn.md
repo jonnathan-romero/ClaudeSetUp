@@ -2,8 +2,6 @@
 
 Single-turn rules don't carry across long conversations. Persona drifts ~20–40% over 10–15 turns, the system prompt loses attention as history grows, and adversaries can incrementally walk the model off-task. Multi-turn prompts treat persistence as a first-class concern.
 
-For per-mechanism comparison and citations, see [research/13-multi-turn-memory.md](../research/13-multi-turn-memory.md).
-
 ## Contents
 
 - [Memory Block — carry forward prior session decisions](#memory-block--carry-forward-prior-session-decisions)

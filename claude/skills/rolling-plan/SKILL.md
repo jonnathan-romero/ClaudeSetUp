@@ -9,7 +9,7 @@ Maintain a durable, file-based plan that survives context resets. The plan lives
 
 Plan at two resolutions: **detail the near term, keep the far term coarse**, and make decisions concrete only as the work reaches them (the last responsible moment). The plan is a stripped-down spine with suggestions, not a fully-specified blueprint — over-specifying early imputes the first session's guesses onto work it cannot yet understand. The guiding principle is that we only know the full specifications after finishing all prior steps in a plan, only then do we have the full picture.
 
-This skill is **human-in-the-loop** first. It advises, sizes, and proposes; the user decides. It is not for producing a fully-specified, decide-everything-up-front brief for an autonomous agent to execute alone — that is a different kind of plan, and it has its own skill: [`agent-brief`](../agent-brief/SKILL.md). When a step is understood well enough to specify fully, you can **offload** it to an autonomous agent rather than work it in-session (see the `offload` operation below).
+This skill is **human-in-the-loop** first. It advises, sizes, and proposes; the user decides. It is not for producing a fully-specified, decide-everything-up-front brief for an autonomous agent to execute alone — that is a different kind of plan, and it has its own skill: [`agent-brief`](../agent-brief/SKILL.md). When a step is understood well enough to specify fully, **offload** it to an autonomous agent rather than work it in-session (see the `offload` operation below).
 
 ## When this skill is and isn't active
 
@@ -78,11 +78,11 @@ The skill is description-triggered: these "verbs" are matched from natural langu
 
 ### offload — hand a step to an autonomous agent
 
-When a step is understood well enough to specify fully, you can offload it to an autonomous agent instead of working it in-session. This is the seam to the [`agent-brief`](../agent-brief/SKILL.md) skill.
+When a step is understood well enough to specify fully, offload it to an autonomous agent instead of working it in-session. This is the seam to the [`agent-brief`](../agent-brief/SKILL.md) skill.
 
 1. **Hand off to `agent-brief`'s `offload`** — it expands the coarse step into a full brief, drawing the "why" from `.plan/00-interview.md` and locked choices from `Decisions Made`, and writes it to `.briefs/NN-step.md` (through its own diff review). Interview only fills the gaps those don't already settle — chiefly the machine-checkable acceptance criteria, since a step's `Goal` is intentionally looser than a runnable gate.
 2. **Link and mark** — add `Brief: ../.briefs/NN-step.md` to the step and set it in-progress.
-3. **Write-back is reviewer-gated.** The agent runs builder → independent reviewer. Only after the reviewer passes the brief's acceptance criteria does the agent flip the step `[x]` and fill its `Outcome`; on failure it stops and logs to `.briefs/NN-step-result.md`, leaving the step for you. This is the one sanctioned exception to "a human diff-reviews substantive plan edits" — gated by an independent reviewer, not unattended self-certification — so a resuming `status` reads a result you can trust.
+3. **Write-back is reviewer-gated.** The agent runs builder → independent reviewer. Only after the reviewer passes the brief's acceptance criteria does the agent flip the step `[x]` and fill its `Outcome`; on failure it stops and logs to `.briefs/NN-step-result.md`, leaving the step for the user. This is the one sanctioned exception to "a human diff-reviews substantive plan edits" — gated by an independent reviewer, not unattended self-certification — so a resuming `status` reads a trustworthy result.
 
 `.briefs/` is owned by `agent-brief` and git-ignored like `.plan/`. (When a brief should be a durable, shareable record instead of local scratch, `agent-brief` can push it as a GitHub issue and link the step to the issue URL rather than a local file.)
 
@@ -124,7 +124,7 @@ The invariants are easy to talk yourself out of. When you catch one of these tho
 
 ## Reviewing changes to plan files
 
-**Substantive** plan-file changes go through an editable side-by-side diff so the user stays in control. Write the proposed file content to a temp file and run the bundled script:
+**Substantive** plan-file changes go through an editable side-by-side diff so the user stays in control. Write the proposed file content to a temp file (use the **Write tool**, not a bash heredoc — plan files contain backticks, `$`, and ``` fences that a heredoc mangles) and run the bundled script:
 
 ```bash
 ~/.claude/skills/rolling-plan/scripts/review-diff.sh "$dest" "$proposed"

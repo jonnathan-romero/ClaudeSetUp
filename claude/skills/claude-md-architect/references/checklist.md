@@ -3,12 +3,33 @@
 The complete checklist used by Author and Audit modes. Rules first,
 then 1–2 worked examples per major rule.
 
+## Contents
+
+1. Size
+2. Structure
+3. Content categories
+4. Style of rules
+5. Contradictions
+6. Voice consistency
+7. @ imports
+8. Hierarchy & precedence
+9. Anti-patterns to flag in audits
+10. The load-bearing test
+11. Two memory surfaces (current)
+
 ## 1. Size
 
-- **Target under 300 lines.** Anthropic warns at 40KB; community
-  reports adherence collapses past ~200 lines because rules buried
-  late get dropped.
-- A 50-line targeted file outperforms a vague 300-line file.
+- **Target under 200 lines.** This is now official
+  (https://code.claude.com/docs/en/memory): "Longer files consume more
+  context and reduce adherence." Community sweet spot is tighter still
+  (~40–120 lines).
+- **No hard limit on CLAUDE.md** — it loads in full regardless of
+  length. The 200-line / 25KB *hard truncation* applies to auto-memory
+  `MEMORY.md`, not CLAUDE.md. The in-product "too long" warning scales
+  with the model's context window.
+- A 50-line targeted file outperforms a vague 200-line file. Anthropic's
+  own model: a project CLAUDE.md costs ~1,800 tokens, re-sent every turn,
+  every session.
 
 **Example — bloated rule list:**
 
@@ -63,6 +84,11 @@ If yes, keep. If Claude figures it out by reading two files, drop.
 - Avoid `DON'T X` — negation activates the concept being rejected.
   Reframe to a positive: "Use Y" instead of "Don't use X".
 - Explain WHY for any non-obvious rule, in one short clause.
+- **Emphasis (IMPORTANT / YOU MUST) is a dial, not a default.** Official
+  best-practices says it improves adherence; the prompt-engineering docs
+  say *dial it back* on Opus 4.5/4.6+, which over-trigger on aggressive
+  language. Reserve it for the few rules Claude actually keeps breaking —
+  if every line is IMPORTANT, none is. Flag pervasive emphasis in audits.
 
 **Example — vague vs specific:**
 
@@ -97,19 +123,38 @@ The model handles second-person imperative best.
 start. They count toward your token budget.
 
 - Prefer relative paths from the file containing the import.
-- Recursion limit: 5 levels.
+- Recursion limit: 4 hops (current docs; older docs said 5).
+- Imports help organization but do NOT save context — imported files
+  load in full at launch.
 - For real context savings, use `.claude/rules/` with path-scoped
   YAML frontmatter — those load only when matching files are touched.
 - Don't import secrets-bearing files.
 
 ## 8. Hierarchy & precedence
 
-Loading order (highest precedence wins on conflicts):
+**Files CONCATENATE — they do NOT override each other.** This is the
+most common myth to avoid. There is no key-level merge with a "winner":
+every discovered file's text is stacked into context, and if two rules
+contradict, "Claude may pick one arbitrarily"
+(https://code.claude.com/docs/en/memory). Resolve conflicts by
+*removing* them, not by relying on precedence.
 
-1. Managed (`/etc/claude-code/CLAUDE.md` or platform-specific)
-2. Project (`./CLAUDE.md` or `.claude/CLAUDE.md`)
-3. User (`~/.claude/CLAUDE.md`)
-4. Local (`./CLAUDE.local.md`, gitignored)
+Load order, broadest → most specific (most specific is read *last* —
+the only "precedence" that exists is this soft positional effect, not a
+guarantee):
+
+1. Managed policy (macOS `/Library/Application Support/ClaudeCode/CLAUDE.md`,
+   Linux/WSL `/etc/claude-code/CLAUDE.md`) — the only hard floor; cannot
+   be excluded.
+2. User (`~/.claude/CLAUDE.md`)
+3. Project (`./CLAUDE.md` or `.claude/CLAUDE.md`)
+4. Local (`./CLAUDE.local.md`, gitignored) — appended after `CLAUDE.md`
+   within the same directory.
+
+Claude also walks *up* the tree from the working directory, loading
+every ancestor file at launch. Subdirectory CLAUDE.md files below the
+cwd load **on demand** when Claude reads a file there (and don't survive
+`/compact` — only the project-root file is re-injected).
 
 Personal preferences → user. Team-shared rules → project. Machine-
 specific overrides → local.
@@ -132,6 +177,15 @@ specific overrides → local.
 For each line, ask: would Claude make a mistake without this rule? If
 you can't think of a concrete past mistake, the rule isn't
 load-bearing. Delete.
+
+## 11. Two memory surfaces (current)
+
+CLAUDE.md is human-authored. Claude Code also now has **auto memory**
+(`MEMORY.md`, Claude-written, per-repo, machine-local; v2.1.59+). When
+auditing, know which surface you're in: CLAUDE.md holds *instructions
+and rules you write*; auto memory holds *learnings Claude accumulates*.
+Don't migrate auto-memory content into CLAUDE.md wholesale. Use
+`/memory` to see exactly which files are loaded.
 
 ## References
 

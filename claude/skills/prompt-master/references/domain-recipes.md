@@ -212,4 +212,4 @@ See [multimodal.md](multimodal.md). Place before text, use logical page numbers,
 
 **Pitfalls:** trusting in-context memory across hours of work. Failing to plan for context reset — Claude memory tool's built-in prompt: *"ASSUME INTERRUPTION."*
 
-See also: [caching.md](caching.md) for cache-friendly long-running prompts and [research/13-multi-turn-memory.md](../research/13-multi-turn-memory.md) for full memory mechanism comparison.
+See also: [caching.md](caching.md) for cache-friendly long-running prompts and [multi-turn.md](multi-turn.md) for memory mechanism comparison.

@@ -23,7 +23,9 @@ logging.basicConfig(level=logging.INFO, format="[setup-office-search] %(message)
 logger = logging.getLogger(__name__)
 
 EXTRACTOR = Path(__file__).resolve().parent / "office_extract.py"
-CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "ripgrep-all"
+CONFIG_DIR = (
+    Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "ripgrep-all"
+)
 CONFIG_PATH = CONFIG_DIR / "config.jsonc"
 
 SKELETON = {"$schema": "./config.v1.schema.json", "custom_adapters": []}
@@ -41,24 +43,37 @@ def adapter(ext: str) -> dict:
     }
 
 
-def load_config() -> dict:
-    """Read the existing JSONC config, tolerating // comments, or start fresh."""
+def load_config() -> dict | None:
+    """Read the existing JSONC config, or None if it can't be parsed safely.
+
+    Returning None (rather than a fresh skeleton) lets the caller bail instead
+    of overwriting a config it couldn't read and silently dropping the user's
+    other custom adapters.
+    """
     if not CONFIG_PATH.exists():
         return dict(SKELETON)
     raw = CONFIG_PATH.read_text()
-    # rga's config uses only `//` line comments; strip them so json can parse it.
+    # rga's config is JSONC: strip `//` line comments and trailing commas so
+    # the stdlib json parser accepts the common cases.
     stripped = re.sub(r"^\s*//.*$", "", raw, flags=re.MULTILINE)
+    stripped = re.sub(r",(\s*[}\]])", r"\1", stripped)
     try:
         return json.loads(stripped)
     except json.JSONDecodeError:
-        logger.warning("could not parse %s; starting from a fresh config", CONFIG_PATH)
-        return dict(SKELETON)
+        return None
 
 
 def main() -> int:
     config = load_config()
+    if config is None:
+        logger.error(
+            "could not parse %s — leaving it untouched. Fix or remove it, then re-run.",
+            CONFIG_PATH,
+        )
+        return 1
     others = [
-        a for a in config.get("custom_adapters", [])
+        a
+        for a in config.get("custom_adapters", [])
         if a.get("name") not in ("xlsx", "pptx")
     ]
     config["custom_adapters"] = others + [adapter("xlsx"), adapter("pptx")]

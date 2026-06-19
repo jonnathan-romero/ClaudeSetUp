@@ -3,9 +3,18 @@
 Use as a starting skeleton. Trim aggressively — the goal is the
 shortest CLAUDE.md that still prevents real mistakes.
 
+## Contents
+
+- Generic skeleton
+- Python (primary)
+- TypeScript / JavaScript stub
+- Rust stub
+- Go stub
+- Trim heuristic
+
 ## Generic skeleton
 
-```markdown
+````markdown
 # [Project name]
 
 [One-sentence description of what this is.]
@@ -16,14 +25,14 @@ shortest CLAUDE.md that still prevents real mistakes.
 - [Notable libraries]
 
 ## Commands
-\`\`\`bash
+```bash
 # Install
 [install command]
 # Test
 [test command]
 # Lint
 [lint command]
-\`\`\`
+```
 
 ## Architecture
 [One paragraph: where the code lives, how data flows, what's
@@ -35,11 +44,11 @@ non-obvious.]
 
 ## Gotchas
 - [Specific past-mistake-prevention rules]
-```
+````
 
 ## Python (primary)
 
-```markdown
+````markdown
 # [Project name]
 
 ## Stack
@@ -48,12 +57,12 @@ non-obvious.]
 - pytest for testing
 
 ## Commands
-\`\`\`bash
+```bash
 uv sync
 uv run pytest
 uv run ruff check
 uv run ruff format
-\`\`\`
+```
 
 ## Style
 - Type hints on function signatures; skip obvious local vars
@@ -72,69 +81,69 @@ uv run ruff format
 
 ## Gotchas
 - [Project-specific things Claude has gotten wrong before]
-```
+````
 
 ## TypeScript / JavaScript stub
 
-```markdown
+````markdown
 ## Stack
 - Node [version], pnpm
 - TypeScript strict mode
 - [framework]
 
 ## Commands
-\`\`\`bash
+```bash
 pnpm install
 pnpm test
 pnpm lint
-\`\`\`
+```
 
 ## Style
 - Functional components; hooks at top of file
 - `@/*` import alias for src
 - No `any` — use `unknown` and narrow
-```
+````
 
 ## Rust stub
 
-```markdown
+````markdown
 ## Stack
 - Rust 2024 edition
 - cargo workspaces
 
 ## Commands
-\`\`\`bash
+```bash
 cargo check --all-features
 cargo test --all-features
 cargo clippy -- -D warnings
-\`\`\`
+```
 
 ## Style
 - All clippy warnings are errors
 - `tempfile::tempdir()` for test fixtures
 - Serialize model types
-```
+````
 
 ## Go stub
 
-```markdown
+````markdown
 ## Stack
 - Go [version]
 - go modules
 
 ## Commands
-\`\`\`bash
+```bash
 go test -race ./...
 go vet ./...
 golangci-lint run
-\`\`\`
+```
 
 ## Style
 - Race detector required for tests
 - Test every exported function and error case
 - Reserve CLAUDE.md for architectural judgment; let `go vet` and
   `staticcheck` enforce syntax/naming.
-```
+````
 
 ## Trim heuristic
 

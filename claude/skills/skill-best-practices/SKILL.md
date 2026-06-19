@@ -30,8 +30,7 @@ If `skill-creator` is also active, layer this skill's principles into each of it
 | 7 | Reference files one level deep, each with its own TOC if >100 lines | Visual |
 | 8 | No hardcoded absolute paths, no embedded secrets, no API keys | `grep -E '/home/|sk-[a-zA-Z0-9]|Bearer ' SKILL.md` |
 | 9 | Imperative voice; no "I can", "you can", or first-person framing | Visual |
-| 10 | Trigger evals drafted — 8–10 should-trigger prompts and 8–10 *genuinely tricky* near-miss should-not-trigger prompts | `evals/evals.json` (via skill-creator) |
-| 11 | No secrets, no untrusted-source content, `allowed-tools` scoped to the minimum; third-party skills audited before install | See `references/security.md` |
+| 10 | No secrets, no untrusted-source content, `allowed-tools` scoped to the minimum; third-party skills audited before install | See `references/security.md` |
 
 ## Top mistakes that break skills (read first)
 

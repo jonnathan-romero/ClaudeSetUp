@@ -4,6 +4,7 @@ Complete reference for all agent-browser commands. For quick start and common pa
 
 ## Contents
 
+- [Setup](#setup) — download Chrome for Testing
 - [Navigation](#navigation) — `open`, `back`, `forward`, `reload`, `close`, `connect`
 - [Snapshot (page analysis)](#snapshot-page-analysis) — accessibility tree + `@eN` refs
 - [Interactions (use @refs from snapshot)](#interactions-use-refs-from-snapshot) — `click`, `fill`, `type`, `select`, `check`, `hover`, `press`, `scroll`, `upload`, `download`
@@ -22,9 +23,16 @@ Complete reference for all agent-browser commands. For quick start and common pa
 - [Dialogs](#dialogs)
 - [JavaScript](#javascript) — `eval`
 - [State Management](#state-management)
+- [Authentication Vault](#authentication-vault) — `auth save`, `auth login`
 - [Global Options](#global-options) — `--json`, `--session`
 - [Debugging](#debugging) — `trace`, `profiler`, `console`, `errors`, `highlight`, `inspect`, `clipboard`
 - [Environment Variables](#environment-variables)
+
+## Setup
+
+```bash
+agent-browser install         # Download Chrome for Testing if no Chrome is detected (idempotent)
+```
 
 ## Navigation
 
@@ -117,13 +125,19 @@ agent-browser record restart ./take2.webm # Stop current + start new
 ## Wait
 
 ```bash
-agent-browser wait @e1                     # Wait for element
+agent-browser wait @e1                     # Wait for element by ref
+agent-browser wait ".success-banner"       # Wait for a CSS selector to appear
 agent-browser wait 2000                    # Wait milliseconds
 agent-browser wait --text "Success"        # Wait for text (or -t)
 agent-browser wait --url "**/dashboard"    # Wait for URL pattern (or -u)
 agent-browser wait --load networkidle      # Wait for network idle (or -l)
 agent-browser wait --fn "window.ready"     # Wait for JS condition (or -f)
 ```
+
+The positional argument accepts a `@ref`, a CSS selector, or a millisecond
+integer; the `--text/--url/--load/--fn` flags cover the other wait conditions.
+Prefer a CSS selector over a ref for post-navigation waits — refs are tied to
+the snapshot they came from, but a selector survives the DOM swap.
 
 ## Mouse Control
 
@@ -296,10 +310,26 @@ agent-browser state save auth.json    # Save cookies, storage, auth state
 agent-browser state load auth.json    # Restore saved state
 ```
 
+## Authentication Vault
+
+Store credentials in agent-browser's vault so passwords are piped via stdin
+rather than passed as visible arguments. See
+[authentication.md](authentication.md#auth-vault-recommended-for-credentials).
+
+```bash
+echo "$PASS" | agent-browser auth save <name> \
+    --url <login-url> --username <user> --password-stdin   # Save credentials (password via stdin)
+agent-browser auth login <name>                            # Replay the saved login
+```
+
 ## Global Options
 
 ```bash
 agent-browser --session <name> ...    # Isolated browser session
+agent-browser --session-name <name>   # Isolated session that also auto-persists state
+agent-browser --state <file> ...      # Load saved cookies/storage at launch
+agent-browser --auto-connect ...      # Auto-discover and attach to a running Chrome
+agent-browser --profile <dir> ...     # Persistent Chrome user-data dir
 agent-browser --json ...              # JSON output for parsing
 agent-browser --headed ...            # Show browser window (not headless)
 agent-browser --full ...              # Full page screenshot (-f)
@@ -315,6 +345,13 @@ agent-browser --help                  # Show help (-h)
 agent-browser --version               # Show version (-V)
 agent-browser <command> --help        # Show detailed help for a command
 ```
+
+`--session <name>` isolates a browser context (separate cookies, storage, and
+tabs). `--session-name <name>` additionally auto-saves that context's cookies +
+localStorage on close and restores them on the next launch — see
+[authentication.md](authentication.md#session-persistence) and
+[session-management.md](session-management.md). Set `AGENT_BROWSER_ENCRYPTION_KEY`
+to encrypt the persisted state at rest.
 
 ## Debugging
 
@@ -338,6 +375,8 @@ agent-browser profiler stop trace.json    # Stop and save profile
 
 ```bash
 AGENT_BROWSER_SESSION="mysession"            # Default session name
+AGENT_BROWSER_PROFILE="/path/to/profile"     # Persistent Chrome user-data dir (cookies, cache, service workers)
+AGENT_BROWSER_ENCRYPTION_KEY="<hex>"         # Encrypt persisted session/state files at rest
 AGENT_BROWSER_EXECUTABLE_PATH="/path/chrome" # Custom browser path
 AGENT_BROWSER_EXTENSIONS="/ext1,/ext2"       # Comma-separated extension paths
 AGENT_BROWSER_PROVIDER="browserbase"         # Cloud browser provider

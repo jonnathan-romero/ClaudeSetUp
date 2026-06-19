@@ -92,7 +92,7 @@ Pipeline (run in order, do not skip):
 
 1. **Read the prompt fully** — including embedded examples, schemas, and any system/user split. Do not start suggesting until you have it all.
 2. **Detect target model class** — see above. If unclear, ask. The same edit can help one class and hurt another.
-3. **Run the issue-detector pass** — invoke `scripts/audit.py` against the user's prompt. The script walks the 15 anti-patterns in [anti-patterns.md](references/anti-patterns.md) plus the folklore tactics in [folklore-audit.md](references/folklore-audit.md) using regex heuristics, and returns structured JSON with line numbers + suggested fixes. Pass `--target-model reasoning` if applicable. The script catches the mechanically-detectable issues; pair its output with manual review for the patterns regex can't catch (contradicting examples, conflicting persona, false-premise hallucination).
+3. **Run the issue-detector pass** — invoke `scripts/audit.py` against the user's prompt. The script walks the regex-tractable subset — 7 of the 15 anti-patterns in [anti-patterns.md](references/anti-patterns.md) (plus an all-caps style check) and 5 folklore tactics from [folklore-audit.md](references/folklore-audit.md) — returning structured JSON with line numbers + suggested fixes. Pass `--target-model reasoning` if applicable. The script catches the mechanically-detectable issues; pair its output with manual review for the patterns regex can't catch (contradicting examples, conflicting persona, false-premise hallucination).
    ```bash
    python3 scripts/audit.py user_prompt.md --target-model reasoning
    ```

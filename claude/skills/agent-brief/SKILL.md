@@ -117,13 +117,7 @@ The skill is description-triggered; these verbs are matched from natural languag
 
 ### execute — the builder + reviewer model
 
-Run the brief the way its **Execution route** binds it (see The dials). The three routes share one model — a builder, then an independent reviewer — and the artifact doesn't change between them:
-
-- **Two subagents** — a builder agent and a separate reviewer agent, inline.
-- **Workflow** — builder phase → reviewer phase → loop-until-criteria.
-- **Fresh session** — reads the brief, builds, spawns its own reviewer subagent.
-
-If the bound route's harness is unavailable, fall back to another, run it, and note the substitution in the result. In all three:
+Run the brief the way its **Execution route** binds it (see The dials for the three routes). They share one model — a builder, then an independent reviewer — and the artifact doesn't change between them. If the bound route's harness is unavailable, fall back to another, run it, and note the substitution in the result. In all three:
 
 ```
 brief (.briefs/NN-step.md)
