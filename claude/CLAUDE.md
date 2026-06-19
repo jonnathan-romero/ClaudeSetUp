@@ -40,8 +40,9 @@
 - Python 3.12+, `uv` only (never pip, conda, poetry)
 - Google-style docstrings
 - Type hints on function signatures; skip obvious local vars
+- Never add `from __future__ import annotations` — Python 3.12+ evaluates our hint syntax natively, so it's redundant
 - `logging` only — never `print()`. Library code: `logging.getLogger(__name__)`. Scripts/notebooks: project logger utility.
 - Direct imports only — no try/except guards or `_HAS_X` flags
-- Minimal comments: only for tricky logic, TODOs, assumptions, or non-obvious design choices
-- Empty `__init__.py` files (no import code)
+- Minimal succint comments: only for tricky logic, TODOs, assumptions, or non-obvious design choices
+- Empty `__init__.py` files (no import code or comments)
 - pytest for testing. Write throwaway test scripts during implementation as needed.
