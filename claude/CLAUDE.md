@@ -46,3 +46,4 @@
 - Minimal succint comments: only for tricky logic, TODOs, assumptions, or non-obvious design choices
 - Empty `__init__.py` files (no import code or comments)
 - pytest for testing. Write throwaway test scripts during implementation as needed.
+- No CLI arg parsing (`argparse`, `click`, `sys.argv`) in scripts — I run files in the IDE, not the terminal. Put runtime inputs as plain editable variables in `if __name__ == "__main__"`.
