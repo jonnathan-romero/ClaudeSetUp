@@ -2,6 +2,8 @@
 
 The description is the only field Claude's router sees at idle. A perfect 500-line SKILL.md with a vague description never runs. Spend disproportionate time here.
 
+One thing a description *can't* fix: Claude won't reach for a skill on a trivial, one-step request it can already handle directly — a perfect description doesn't change that. Skills fire for complex, multi-step, or specialized work. Design your trigger phrases (and your eval prompts) around the requests you actually want it for, not toy one-liners.
+
 ## Contents
 
 - [Anatomy of a strong description](#anatomy-of-a-strong-description)
@@ -81,6 +83,8 @@ provider-neutral code, general programming/ML.
 Do NOT use for simple lookups.
 Use only for full report generation workflows.
 ```
+
+To know whether your negatives work, test them against *genuinely tricky* near-misses — prompts that share keywords or concepts with the skill but actually need something else. A PDF skill tested against "write a fibonacci function" learns nothing; test it against "extract the chart image from this scanned page" (looks like PDF work, isn't this skill's job). Obvious negatives give false confidence.
 
 ## Length and budget
 

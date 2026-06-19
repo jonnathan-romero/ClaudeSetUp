@@ -7,3 +7,4 @@
 .fixtures/
 __pycache__/
 *.py[cod]
+.agents/

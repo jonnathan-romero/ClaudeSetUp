@@ -1,6 +1,6 @@
 ---
 name: skill-best-practices
-description: Authoritative reference and quality checklist for writing Claude Code Agent Skills. ALWAYS trigger when authoring, reviewing, debugging, or improving a SKILL.md, including alongside skill-creator. Use when the user asks to "write a skill", "review this skill", "is my skill good", "why won't my skill trigger", "what's wrong with this description", or mentions SKILL.md authoring, frontmatter fields, trigger accuracy, progressive disclosure, anti-patterns, skill anatomy, or debugging skill activation failures. Pairs with skill-creator — skill-creator runs the build/eval workflow, this skill supplies the principles, structural conventions, and failure-mode catalog.
+description: Authoritative reference and quality checklist for writing Claude Code Agent Skills. ALWAYS trigger when authoring, reviewing, debugging, or improving a SKILL.md, including alongside skill-creator. Use when the user asks to "write a skill", "review this skill", "is my skill good", "why won't my skill trigger", "what's wrong with this description", "is this skill safe to install", or mentions SKILL.md authoring, frontmatter fields, trigger accuracy, progressive disclosure, anti-patterns, skill anatomy, skill security, or debugging skill activation failures. Pairs with skill-creator — skill-creator runs the build/eval workflow, this skill supplies the principles, structural conventions, and failure-mode catalog. Do NOT use for authoring agent definitions (use agent-best-practices) or general prompt writing (use prompt-master).
 ---
 
 # Skill Best Practices
@@ -30,7 +30,8 @@ If `skill-creator` is also active, layer this skill's principles into each of it
 | 7 | Reference files one level deep, each with its own TOC if >100 lines | Visual |
 | 8 | No hardcoded absolute paths, no embedded secrets, no API keys | `grep -E '/home/|sk-[a-zA-Z0-9]|Bearer ' SKILL.md` |
 | 9 | Imperative voice; no "I can", "you can", or first-person framing | Visual |
-| 10 | At least one should-trigger eval prompt and one near-miss should-not-trigger prompt drafted | `evals/evals.json` (via skill-creator) |
+| 10 | Trigger evals drafted — 8–10 should-trigger prompts and 8–10 *genuinely tricky* near-miss should-not-trigger prompts | `evals/evals.json` (via skill-creator) |
+| 11 | No secrets, no untrusted-source content, `allowed-tools` scoped to the minimum; third-party skills audited before install | See `references/security.md` |
 
 ## Top mistakes that break skills (read first)
 
@@ -42,10 +43,15 @@ If `skill-creator` is also active, layer this skill's principles into each of it
 6. **Treating SKILL.md as documentation.** Skills are operational instructions in imperative voice. Move long-form explanation to `references/`.
 7. **Voodoo constants.** Every magic number (`IC > 0.02`, `temperature: 0.3`) needs a one-line justification, or omit it.
 8. **Forcing assertions on subjective skills.** Style/design/writing skills don't take pass/fail evals — use human review only.
+9. **Trusting a skill you didn't audit.** SKILL.md is executable trust — its body is instructions Claude follows, its scripts run with your permissions. Read every file before installing a third-party skill; never ship secrets or broad `allowed-tools` in your own. See `references/security.md`.
 
-## The five principles
+## Core principles
 
-### 1. Progressive disclosure
+### 1. Earn every token
+
+The context window is a public good, and Claude is already very smart. Only add what Claude doesn't already know or wouldn't do by default. For each paragraph ask: *does this justify its token cost?* Don't explain what a PDF is, restate general programming practice, or document what a linter already enforces — that's the difference between a ~50-token instruction and a bloated ~150-token one that says the same thing. Spend your tokens on the non-obvious: project conventions, fragile sequences, the failures you've actually seen.
+
+### 2. Progressive disclosure
 
 Three loading tiers:
 - **Metadata** (name + description) — always in context, ~100 tokens
@@ -54,7 +60,9 @@ Three loading tiers:
 
 Keep SKILL.md ≤500 lines. Move detail into `references/<topic>.md` files one level deep, each with its own TOC. Idle cost stays near zero; Claude navigates to exactly what it needs.
 
-### 2. Pushy descriptions beat polite ones
+**Lifecycle matters once it triggers.** In Claude Code the invoked body enters the conversation as a single message and stays there the rest of the session — Claude does *not* re-read the file on later turns. Two consequences: write **standing instructions, not one-time steps** ("when editing X, do Y" — not "first, do Y"), and remember every body line is a *recurring per-turn* cost, not a one-time load. After compaction only the first ~5K tokens of each skill are re-attached (25K combined), so keep load-bearing guidance near the top.
+
+### 3. Pushy descriptions beat polite ones
 
 Claude under-triggers by default. Anthropic's flagship `pdf` skill opens with: *"Use this skill whenever the user wants to do anything with PDF files."* That's the bar.
 
@@ -66,7 +74,7 @@ Claude under-triggers by default. Anthropic's flagship `pdf` skill opens with: *
 
 See `references/descriptions.md` for annotated examples.
 
-### 3. Match freedom to fragility
+### 4. Match freedom to fragility
 
 - **High freedom** (prose guidance) — open-ended judgment: code review, design feedback, planning
 - **Medium freedom** (templates + pseudocode) — preferred patterns with room to adapt
@@ -74,13 +82,19 @@ See `references/descriptions.md` for annotated examples.
 
 Anthropic's `xlsx` skill mandates `scripts/recalc.py`; `docx` ships `scripts/office/` for unpack/pack/validate. If a step must run identically every time, ship the script and tell the skill to invoke it.
 
-### 4. Test across models
+### 5. Test across models
 
 A description that triggers reliably on Opus may fail on Haiku. If the skill must work for everyone, optimize for the least capable model: more explicit triggers, shorter SKILL.md body, more concrete examples.
 
-### 5. Observe, don't assume
+### 6. Observe, don't assume
 
-Build evals first. Run with-skill vs without-skill in parallel. Watch the real output before extending SKILL.md. Iterate on real failures; generalize patterns rather than overfitting to the test set. The full eval workflow lives in `skill-creator` — this skill is the rubric you grade against.
+Build evals first. Run with-skill vs without-skill in parallel. Watch the real output before extending SKILL.md. Iterate on real failures; generalize patterns rather than overfitting to the test set.
+
+Test the two failure layers **separately** — they have different fixes:
+- **Triggering** (does it activate on the right prompts?) — governed by the description. Test with 8–10 should-trigger prompts and 8–10 *genuinely tricky* near-misses (queries that share keywords but need something else). The near-misses are what catch over-triggering; obvious negatives ("write a fibonacci function" for a PDF skill) test nothing.
+- **Behavior** (once active, is the output better than baseline?) — governed by the body and scripts.
+
+Two caveats that trip people up: a simple one-step query won't trigger a skill *even with a perfect description* (Claude just does it directly), so test with realistic, multi-step prompts. And always test in a **fresh session** — leftover context from authoring masks gaps in the written instructions. The full eval workflow lives in `skill-creator` — this skill is the rubric you grade against.
 
 ## Skill structure
 
@@ -104,9 +118,10 @@ Reference files from SKILL.md with relative links: `See [descriptions.md](refere
 
 | Field | Required | Notes |
 |---|---|---|
-| `name` | yes | kebab-case, ≤64 chars, matches directory |
-| `description` | yes | combined with `when_to_use` ≤1536 chars (stay ≤1024 for portability), third person, what + when, concrete triggers |
-| `allowed-tools` | no | Pre-approve to skip prompts: `Bash(git *), Read` (comma-separated — unambiguous when a pattern contains spaces) |
+| `name` | yes | kebab-case, ≤64 chars, matches directory; prefer gerund form (`processing-pdfs`, not `helper`/`utils`); no XML tags, no reserved words `claude`/`anthropic` |
+| `description` | yes | non-empty; combined with `when_to_use` ≤1536 chars (stay ≤1024 for portability); third person, what + when, concrete triggers; no XML tags |
+| `when_to_use` | no | Extra trigger phrases / example requests; appended to `description` in the listing and counts toward the 1536-char cap |
+| `allowed-tools` | no | Pre-approve to skip prompts: `Bash(git *), Read` (comma-separated — unambiguous when a pattern contains spaces). *Pre-approves, does not restrict* — scope it narrowly on shared skills |
 | `arguments` | no | Positional args; reference as `$name` in body |
 | `argument-hint` | no | Autocomplete hint shown after `/skill-name` |
 | `disable-model-invocation` | no | `true` for side-effect skills like `/deploy` (manual-only) |
@@ -124,11 +139,11 @@ Full reference with examples: `references/frontmatter.md`.
 | skill-creator phase | What this skill contributes |
 |---|---|
 | Capture intent | Use `references/primitives.md` to confirm a *skill* is the right primitive (not hook/subagent/MCP/CLAUDE.md) |
-| Write SKILL.md | Apply the five principles. Use the frontmatter quick reference. Apply `references/descriptions.md` to the description field |
+| Write SKILL.md | Apply the core principles. Use the frontmatter quick reference. Apply `references/descriptions.md` to the description field |
 | Draft test cases | Include both should-trigger and near-miss should-not-trigger prompts (8–10 each) |
 | Run evals | Use `references/anti-patterns.md` to interpret failures |
-| Iterate | If the skill won't trigger, walk `references/debugging.md`'s three failure modes in order |
-| Pre-publish | Run the checklist at the top of this file |
+| Iterate | If the skill won't trigger, walk `references/debugging.md`'s failure modes in order |
+| Pre-publish | Run the checklist at the top of this file; audit per `references/security.md` if the skill ships to others or came from elsewhere |
 
 ## When something should NOT be a skill
 
@@ -149,3 +164,4 @@ Full decision matrix: `references/primitives.md`.
 - [`references/anti-patterns.md`](references/anti-patterns.md) — failure modes catalog
 - [`references/debugging.md`](references/debugging.md) — diagnostic playbook for skills that won't trigger
 - [`references/primitives.md`](references/primitives.md) — skill vs subagent vs hook vs slash command vs MCP
+- [`references/security.md`](references/security.md) — threat model, auditing untrusted skills, scoping tool access

@@ -14,13 +14,15 @@ When a skill won't trigger, or triggers when it shouldn't. Walk these in order.
 
 ## The three failure modes
 
-A skill that won't trigger has one of three problems, in order of how often they occur:
+A skill that won't trigger has one of three problems:
 
 1. **Token budget overflow** — too many skills installed, descriptions truncated silently
 2. **Frontmatter / YAML breakage** — loader skipped the file
 3. **Description design** — loader sees it, router doesn't pick it
 
-Diagnose in this order; each is cheap to check.
+Diagnose in this order because the first two are binary and cheap to rule out: both make the skill *vanish* from `/skills`, so one glance settles them. If the skill is listed, it's mode 3 — which is the most common cause for a typical setup with a handful of skills, and the one that takes real work.
+
+(That's all about *triggering*. A skill that triggers correctly but produces the wrong *output* is a different problem — a body/script issue, not a description issue. Test the two separately; see the eval principle in the parent SKILL.md.)
 
 ## Diagnostic commands
 
@@ -29,7 +31,7 @@ Diagnose in this order; each is cheap to check.
 | `/skills` | All loaded skills, descriptions as the router sees them, invocation mode |
 | `/context` | Current token usage (confirms the skill's metadata is loaded) |
 | `/doctor` | Schema validation errors in settings and SKILL.md |
-| `/debug` | Interactive session debugging — ask why a skill didn't trigger |
+| `/debug-your-config` | Diagnose why a skill isn't appearing or triggering |
 
 If a skill is missing from `/skills`, it's mode 1 or 2. If it appears but doesn't trigger on the right prompts, it's mode 3.
 
@@ -151,7 +153,7 @@ What in the description is over-broad? Common culprits:
 | Skill in `.claude/skills/name.md` (no directory) | Loader skips loose files | Create `name/` directory, move to `name/SKILL.md` |
 | Settings in `.claude.json` instead of `.claude/settings.json` | Settings ignored | Move config to `.claude/settings.json` |
 | Plugin skill installed but invisible | Namespace not applied | Run `/skills` — should appear as `plugin-name:skill-name` |
-| Edits not reflected | New directories require restart | Restart Claude Code |
+| Edits not reflected | Editing an already-watched `SKILL.md` is live (hot-reload, Claude Code ≥2.1.0). Only a *newly created* top-level skills dir, or *other* concurrent sessions, miss the change | Restart only when adding a brand-new skills dir, or to sync a second running session |
 | `disable-model-invocation: true` set unintentionally | Skill never auto-triggers, only via `/name` | Remove the field or set `false` |
 | `paths:` glob too narrow | Skill never auto-triggers because no file matches | Widen the glob or remove `paths:` entirely |
 | Skill triggered but Claude ignored it | Effort/model override too low for the task | Bump `effort: high` or remove the override |

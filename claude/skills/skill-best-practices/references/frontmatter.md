@@ -22,15 +22,19 @@ Every SKILL.md field, with examples and when to use it.
 - Kebab-case (`my-skill`, not `my_skill` or `MySkill`)
 - ≤64 characters
 - Lowercase letters, numbers, hyphens only
+- No XML tags; no reserved words `claude` or `anthropic` (it loads into the system prompt — see `security.md`)
 - Must match the containing directory name
-- Becomes the slash command: `/my-skill`
+- Prefer **gerund form** that names the activity — `processing-pdfs`, `analyzing-spreadsheets`, `reviewing-code`. Avoid vague names (`helper`, `utils`, `tools`) and generic ones (`docs`, `data`, `files`)
 
 ```yaml
 name: skill-best-practices
 ```
 
+In Claude Code the *directory name* is what becomes the `/command`; frontmatter `name` is the display label (the one exception is a plugin-root `SKILL.md`, where `name` sets the command). Keeping them identical avoids surprises.
+
 ### `description`
 
+- Non-empty; no XML tags (it loads into the system prompt — see `security.md`)
 - Claude Code truncates the `description` + `when_to_use` *combined* at 1536 chars (`maxSkillDescriptionChars`); the 1024 figure is the open-standard author cap — stay under 1024 for portability and headroom
 - Third person, imperative voice
 - Lead with **what** + **when** in the first sentence
@@ -42,6 +46,14 @@ description: Extract text and tables from PDFs. Use when working with PDF files 
 ```
 
 See `descriptions.md` for the full pattern library.
+
+### `when_to_use`
+
+Optional. Extra trigger phrases or example requests, appended to `description` in the skill listing. Counts toward the same 1536-char combined cap, so it's only worth splitting out when it keeps the `description` itself readable — most skills just put the triggers in `description`.
+
+```yaml
+when_to_use: "User says 'audit my skills', 'why won't my skill trigger', or pastes a SKILL.md."
+```
 
 ## Invocation control
 
@@ -74,7 +86,9 @@ user-invocable: false
 
 ### `allowed-tools`
 
-Pre-approves tools so Claude doesn't prompt mid-skill. Does *not* expand permissions beyond your settings — your global permission rules still apply.
+Pre-approves tools so Claude doesn't prompt mid-skill. Does *not* expand permissions beyond your settings — your global permission rules still apply. It also does *not restrict*: every tool stays callable whether or not it's listed. To actually remove a tool while the skill is active, use `disallowed-tools` (clears on your next message). On a skill you distribute, scope grants to the minimum (`Bash(git commit *)`, not bare `Bash`) — a broad grant becomes a standing risk for everyone who installs it. See `security.md`.
+
+Project skills (`.claude/skills/` in a repo) only apply their `allowed-tools` after you accept the workspace trust dialog — review them before trusting a repository.
 
 Two valid forms (comma-separated string, or YAML list). Prefer one of these over a space-separated string — space separation is ambiguous when a pattern itself contains a space, e.g. `Bash(git add *)`:
 

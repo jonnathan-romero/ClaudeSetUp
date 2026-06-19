@@ -81,6 +81,12 @@ Empty `scripts/`, `agents/`, `assets/` "for future use".
 
 ## Content anti-patterns
 
+### Explaining what Claude already knows
+
+Paragraphs defining what a PDF is, how a well-known library works, or restating general programming/ML practice.
+**Why it breaks:** The context window is a public good and the body is a recurring per-turn cost once loaded. Generic explanation crowds out the project-specific guidance that's the whole point.
+**Fix:** Assume Claude is smart. Spend tokens only on the non-obvious — your conventions, fragile sequences, failures you've actually hit. Ask of each paragraph: *does it justify its token cost?*
+
 ### Documentation voice
 
 "This skill provides a way to..." / "The purpose of this skill is to..."
@@ -112,6 +118,26 @@ Empty `scripts/`, `agents/`, `assets/` "for future use".
 **Fix:** One default with explicit escape hatches. "Default: A. Use B if X. Use C if Y."
 
 ## Tooling and security anti-patterns
+
+Full threat model, audit checklist, and trust mechanics in `security.md`. The entries below are the most common ones.
+
+### Installing a skill you didn't read
+
+Copying a third-party skill into `~/.claude/skills/` (or trusting a repo's project skills) without reading every file.
+**Why it breaks:** SKILL.md is instructions Claude follows and `scripts/` run with your permissions. A 2026 audit found ~37% of public skills had a security flaw. The publishing bar is one markdown file.
+**Fix:** Audit before install — read SKILL.md, decode anything obfuscated, list every outbound URL, check bundled `plugin.json` (hooks/MCP). See `security.md`.
+
+### Prompt injection via SKILL.md or fetched content
+
+A skill whose body (or a page/file it fetches and "follows") carries instructions that don't match its stated purpose.
+**Why it breaks:** The body is trusted context. This is a direct injection channel — no jailbreak needed. Fetched content is the sharpest edge: a trustworthy skill can turn malicious when its remote dependency changes.
+**Fix:** Be suspicious of "fetch X then do what it says" steps. Pin/scope remote dependencies. Don't auto-execute reference files you haven't read.
+
+### Over-broad `allowed-tools` on a shared skill
+
+`allowed-tools: Bash` on a skill other people install.
+**Why it breaks:** `allowed-tools` pre-approves (it does *not* restrict) — a bare grant silently auto-approves everything for every installer.
+**Fix:** Scope to the minimum (`Bash(git commit *)`). Use `disallowed-tools` to actually remove a tool. Side-effect skills → `disable-model-invocation: true`.
 
 ### Hardcoded absolute paths
 
