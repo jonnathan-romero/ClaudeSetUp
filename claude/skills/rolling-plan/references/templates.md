@@ -43,10 +43,13 @@ Fill these in and write through the diff-review script (substantive edits). Keep
     Goal: <what done looks like>  <!-- optional; omit for a self-evident step -->
 
 ## Decisions Made
-| Decision | Rationale |
-|----------|-----------|
-| <choice made> | <why> |
-<!-- tag a genuinely irreversible choice: "<choice> (one-way door)" -->
+| Decision | Source | Rationale |
+|----------|--------|-----------|
+| <choice made> | confirmed / research-Outcome / assumed | <why> |
+<!-- Source = provenance, so a later realign-plan pass can tell a real decision from a hardened assumption:
+     `confirmed` (the user confirmed it) · `research-Outcome` (settled by a research step — link the .research file) ·
+     `assumed` (a working assumption, NOT yet confirmed — this is a smell; prefer Open Questions over this table).
+     Tag a genuinely irreversible choice: "<choice> (one-way door)". -->
 
 ## Open Questions / Deferred Decisions
 - <decision deliberately deferred> — defer until <trigger / the point it can't wait (e.g. before/after Step NN)>
@@ -68,8 +71,8 @@ Notes on use:
   - **Outcome** — backward: written on completion — what it actually produced and any divergence from the Goal.
 
   When done, flip the checkbox and fill in Outcome.
-- **Decisions** records choices already made; the optional `(one-way door)` tag marks an irreversible one that deserved more deliberation. Reversible choices need no tag.
-- **Open Questions / Deferred Decisions** is where "defer to the last responsible moment" becomes a written commitment — name the decision and the trigger that forces it.
+- **Decisions** records choices already made, each with a `Source` (provenance): `confirmed` / `research-Outcome` / `assumed`. The optional `(one-way door)` tag marks an irreversible one that deserved more deliberation. Reversible choices need no tag. Recording the `Source` is what lets a later `realign-plan` pass catch assumptions that quietly hardened into decisions — an `assumed` row is a flag, not a settled call.
+- **Open Questions / Deferred Decisions** is where "defer to the last responsible moment" becomes a written commitment — name the decision and the trigger that forces it. Unconfirmed working assumptions live here (or in `00-interview.md`'s Assumptions), **not** in Decisions Made — a Decision is something actually confirmed or settled by research.
 - **What Didn't Work** is the durable, plan-level dead-end record (permanently abandoned approaches for this chunk). These are notes that will be useful across future steps or explain important decisions made in prior steps that affects future steps. Session-level "what just happened" belongs in the handoff.
 
 ---
