@@ -1,31 +1,5 @@
 # Global Rules
 
-## Core Principles
-
-### Think Before Coding
-- Plan first for non-trivial tasks. Get alignment before implementing. Ask follow-ups whenever scope, naming, or interfaces are ambiguous. Confirm assumptions explicitly.
-- If multiple interpretations exist, present them — don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
-
-### Simplicity First
-- Minimum code that solves the problem. Nothing speculative.
-- No features beyond what was asked. No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- When a draft feels long, look for the simpler shape and rewrite before showing it.
-
-### Surgical Changes
-- Touch only what the task requires. Match existing style. Leave adjacent code, comments, and formatting alone unless the request asks otherwise.
-- If you notice unrelated dead code, mention it — don't delete it.
-- Remove imports/variables/functions that your changes made unused. Leave pre-existing dead code alone unless asked.
-- Every changed line should trace directly to the request.
-
-### Goal-Driven Execution
-- Transform tasks into verifiable goals with success criteria.
-- For multi-step tasks, state a brief plan: step → verify for each.
-- For large implementations, suggest phased multi-agent approaches (competitive, collaborative, or mixed). Use separate branches for parallel agent work.
-
 ## Response Style
 - Lead with the answer. Conclusion first, then only the reasoning needed to trust it.
 - Shortest complete response. Default to a few sentences or ≤5 bullets for simple things; expand only when the task is genuinely complex, multi-step, or I ask for detail.
@@ -38,6 +12,7 @@
 
 ## Python
 - Python 3.12+, `uv` only (never pip, conda, poetry)
+- Never add dependency groups in `uv` (no `--group`/`[dependency-groups]`) — add to the main dependencies
 - Google-style docstrings
 - Type hints on function signatures; skip obvious local vars
 - Never add `from __future__ import annotations` — Python 3.12+ evaluates our hint syntax natively, so it's redundant
