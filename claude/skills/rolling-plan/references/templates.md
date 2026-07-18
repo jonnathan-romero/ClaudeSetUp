@@ -71,6 +71,9 @@ Notes on use:
   - **Outcome** — backward: written on completion — what it actually produced and any divergence from the Goal.
 
   When done, flip the checkbox and fill in Outcome.
+- **Keep Outcome (and every line) tight.** Outcome is what accretes most across sessions, so write a clause or two, not a recap:
+  - ❌ `Outcome: Implemented the authentication middleware — it validates incoming bearer tokens against the session store, returns a 401 when a token is expired or malformed, logs failed attempts, and is covered by three new unit tests.`
+  - ✅ `Outcome: Validates bearer tokens against the session store and returns 401 on expired/malformed tokens. Tests cover the happy path and two failures.`
 - **Decisions** records choices already made, each with a `Source` (provenance): `confirmed` / `research-Outcome` / `assumed`. The optional `(one-way door)` tag marks an irreversible one that deserved more deliberation. Reversible choices need no tag. Recording the `Source` is what lets a later `realign-plan` pass catch assumptions that quietly hardened into decisions — an `assumed` row is a flag, not a settled call.
 - **Open Questions / Deferred Decisions** is where "defer to the last responsible moment" becomes a written commitment — name the decision and the trigger that forces it. Unconfirmed working assumptions live here (or in `00-interview.md`'s Assumptions), **not** in Decisions Made — a Decision is something actually confirmed or settled by research.
 - **What Didn't Work** is the durable, plan-level dead-end record (permanently abandoned approaches for this chunk). These are notes that will be useful across future steps or explain important decisions made in prior steps that affects future steps. Session-level "what just happened" belongs in the handoff.

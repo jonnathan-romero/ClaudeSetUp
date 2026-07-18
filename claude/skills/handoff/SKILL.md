@@ -4,7 +4,7 @@ description: Compact the current conversation into a handoff document so a fresh
 argument-hint: "What will the next session focus on?"
 ---
 
-Draft a handoff document, show it to the user inline for review, apply any edits they request, then write the final version to disk.
+First offer to clean up throwaway files created this session (skip silently if there are none worth removing), then draft a handoff document, show it to the user inline for review, apply any edits they request, and write the final version to disk.
 
 ## Filename and location
 
@@ -63,6 +63,16 @@ Decisions the next session needs from the user.
 
 **Master plan / Working plan** only apply when this session is doing [rolling-plan](../rolling-plan/SKILL.md) work — i.e. a `.plan/` directory exists. If there's no `.plan/`, omit both lines entirely. When it does exist, point Master plan at `.plan/00-master-plan.md` (drop if there's no master, just a lone child plan) and Working plan at the active child plan with its current phase/step, so the next session can resume against the durable plan. If this session completed a step of the working plan, update the plan before snapshotting — see the rolling-plan skill above for how to flip the step and fill its `Outcome`, and promote any mid-session decisions into the plan's `Decisions Made`.
 
+**With a plan, defer to it; without one, the handoff is the record.** When a `.plan/` exists it is the durable home for Decisions, *plan-level* dead-ends, and step progress — link to it and carry only the *volatile delta* (uncommitted reasoning, what was mid-edit, verbatim corrections, session-level dead-ends), rather than re-narrating what the plan already holds. When there is **no** `.plan/`, the handoff is the sole durable record: keep the full structure and write those decisions and dead-ends into the handoff itself. The skill works standalone — a plan is an optional companion, never a requirement.
+
+## Keep it tight
+
+Short, complete sentences. **Drop any section that would be empty or trivial** instead of padding it — a quick session is a few sections, not all of them. The recall lists (What Went Right / Didn't Work, Decisions) are one line per item, not paragraphs. Spend words on the verbatim user corrections and the next steps — the highest-value carry-over — and trim everywhere else.
+
+## Clean up transient files first
+
+Before drafting, review the files created **this session** and offer to remove the throwaway ones — temp scripts, scratch test files, one-off debug output, dead experiments no longer referenced by the work being handed off. Find candidates with `git status --porcelain` (untracked `??` entries are session-created files); cross-check against what you actually created this session, and exclude anything referenced in Current Progress or Next Steps. List the candidates with a one-line reason each and wait for the user to confirm before deleting; never delete unprompted. **Skip this step silently** (don't mention it) when no files were created, or when every created file is worth keeping.
+
 ## Workflow
 
 Do not draft the handoff inline in chat. Instead write the proposed content to a temp file and run the bundled `scripts/review-diff.sh`, which opens an **editable side-by-side diff in VS Code** and blocks until the user closes the tab — the user edits the right (proposed) pane directly, and whatever they leave there is saved to the final `.handoffs/` path. This is the review surface; don't ask for changes in chat.
@@ -89,9 +99,10 @@ Why the script instead of a plain `Write`: the VS Code extension's native approv
 The script degrades gracefully:
 - **No `code` CLI / not in VS Code** → it skips the diff and just writes the file. Report the path and let the user open and edit the `.md` directly.
 
-1. Create a temp file with `mktemp`, write the full draft into it **with the Write tool** (not a heredoc), then run `scripts/review-diff.sh <dest> <proposed>`.
-2. The user reviews/edits in the VS Code diff (or, in the fallback, edits the saved `.md` directly).
-3. Print the absolute path and the exact pickup command for the next session:
+1. Offer to clean up transient files (see above); skip silently if there's nothing worth removing.
+2. Create a temp file with `mktemp`, write the full draft into it **with the Write tool** (not a heredoc), then run `scripts/review-diff.sh <dest> <proposed>`.
+3. The user reviews/edits in the VS Code diff (or, in the fallback, edits the saved `.md` directly).
+4. Print the absolute path and the exact pickup command for the next session:
 
 ```
 Read <path>, confirm with user the next steps and continue the work described there.

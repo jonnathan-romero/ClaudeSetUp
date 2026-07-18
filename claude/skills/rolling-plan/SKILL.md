@@ -9,6 +9,8 @@ Maintain a durable, file-based plan that survives context resets. The plan lives
 
 Plan at two resolutions: **detail the near term, keep the far term coarse**, and make decisions concrete only as the work reaches them (the last responsible moment). The plan is a stripped-down spine with suggestions, not a fully-specified blueprint — over-specifying early imputes the first session's guesses onto work it cannot yet understand. The guiding principle is that we only know the full specifications after finishing all prior steps in a plan, only then do we have the full picture.
 
+**Write plan files terse.** Short, complete sentences; every line earns its place. The plan is working memory scanned on resume, not prose to read — supporting detail belongs in linked files (e.g. `.research/`), not in the plan itself. Compacting history that has already accreted across the whole effort is [`realign-plan`](../realign-plan/SKILL.md)'s periodic job; the discipline here is to write tight in the first place so less accretes.
+
 This skill is **human-in-the-loop** first. It advises, sizes, and proposes; the user decides. It is not for producing a fully-specified, decide-everything-up-front brief for an autonomous agent to execute alone — that is a different kind of plan, and it has its own skill: [`agent-brief`](../agent-brief/SKILL.md). When a step is understood well enough to specify fully, **offload** it to an autonomous agent rather than work it in-session (see the `offload` operation below).
 
 ## When this skill is and isn't active
@@ -137,7 +139,7 @@ It opens `code --wait --diff`, blocks until the user closes the tab, and saves w
 On **cancel** (exit 2), don't silently proceed — stop and ask the user what they want different, then re-propose. During a multi-file init, a cancel aborts only that file; report what got written and what didn't rather than leaving a half-built `.plan/` unexplained.
 
 - **Diff-review these (substantive):** creating a child plan, master plan, or `00-interview.md`; split/promote rewrites; writing or changing a Decision; rewriting or re-planning existing step text.
-- **Write straight through (trivial), no diff:** flipping a checkbox `[ ]→[x]`, updating the `Current: Phase/Step` line, adding `.plan/` to `.gitignore`, and **filling a step's `Outcome` line on completion** (append-only narration, regardless of length — not a rewrite). Diffing every status tick would be pure friction.
+- **Write straight through (trivial), no diff:** flipping a checkbox `[ ]→[x]`, updating the `Current: Phase/Step` line, adding `.plan/` to `.gitignore`, and **filling a step's `Outcome` line on completion** (append-only narration, kept to a line or two — not a rewrite). Diffing every status tick would be pure friction.
 
 ## Templates and detail
 
