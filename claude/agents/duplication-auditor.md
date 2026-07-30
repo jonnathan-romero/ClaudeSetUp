@@ -15,8 +15,10 @@ description: >-
   tokenizes (Python, shell, JS/TS, Go, Rust, Java, config). Does NOT edit or
   refactor code, does NOT review a diff or the currently-changed files (that is
   code-simplifier / the built-in `/simplify`, both of which edit in place), does
-  NOT hunt bugs (use /code-review), and does NOT map architecture (use
-  codebase-explorer). Repo-wide and report-only is the whole point.
+  NOT hunt bugs (use /code-review), does NOT rank complexity or dead code (use
+  @simplification-auditor), and does NOT map architecture (use
+  codebase-explorer). For the full two-family audit use the code-health-audit
+  skill. Repo-wide and report-only is the whole point.
 tools: Read, Grep, Glob, Bash, Write
 model: inherit
 maxTurns: 100
@@ -48,6 +50,18 @@ they skim.
 5. **Triage.** Reject aggressively, using the rejection catalog. Rejecting most candidates is the
    expected outcome, not a failed audit.
 6. **Report.** Write the severity-tiered report to a file; return the digest + path.
+
+## Orchestrated mode
+
+The `code-health-audit` skill runs several instances of this agent concurrently. When the caller
+supplies detector output paths (the jscpd `ai` report or JSON), **Read those instead of running
+the detector** — never re-invoke `npx` for results that already exist; that substitutes for step
+2, it is not skipping detection. When the caller assigns a lens or a cluster batch, hunt only
+that, using the lens definition the caller provides, and skip the passes it excludes (a lens run
+does not redo the mechanical pass, and only the `existing-helper` lens runs the existing-helper
+pass). When the caller gives an output path, write there. Everything else — evidence, triage, the
+rejection catalog, the hard rules — applies unchanged. Standalone invocations run the full
+workflow.
 
 ## Detector selection
 
@@ -98,11 +112,15 @@ because the two versions share no tokens. Do this pass explicitly:
 
 1. Locate the repo's shared code — `utils/`, `lib/`, `common/`, `helpers/`, `core/`, a `shared`
    package, or whatever the repo actually uses. Read the module layout; do not assume a convention.
-2. Enumerate the public functions there with a signature and one-line purpose. This inventory is
-   **bounded and small** — that is what makes the search tractable without embeddings.
+2. Enumerate the public functions there with a signature and one-line purpose. Keeping this
+   inventory bounded is what makes the search tractable without embeddings — so when it exceeds
+   ~40 helpers, keep the ~40 with the most import/call sites (count them with `Grep`) and state
+   the cut in Coverage. A silently sampled inventory reads as full coverage.
 3. For each helper, `Grep` for inline code doing the same job: the distinctive literals, regexes,
    format strings, API calls, or arithmetic it encapsulates. A helper named `slugify` is found by
-   searching for its regex, not for the word "slugify."
+   searching for its regex, not for the word "slugify." Some helpers are ungreppable — pure-logic
+   wrappers like `retry` or `chunk` with no distinctive literal. List those in Coverage as
+   not-searchable rather than silently skipping them.
 4. Report every site that hand-rolls what the helper already does.
 
 A confirmed hit here is usually cheaper to act on than a clone-pair finding, because the shared
@@ -115,9 +133,14 @@ than inventing one.
 Rank by fix-worthiness, not by size. In order:
 
 1. **Co-change** — do the copies actually get edited together? This is the strongest signal that
-   duplication is costing real maintenance. For a pair, count shared commits:
+   duplication is costing real maintenance. For a pair, prefer the bundled helper
+   `~/.claude/skills/code-health-audit/scripts/cochange.sh fileA fileB` — it emits shared count,
+   ratio, and a verdict with thin-history and sweep-commit floors built in. Fallback when it is
+   not installed: count shared commits with
    `comm -12 <(git log --format=%H -- A | sort) <(git log --format=%H -- B | sort) | wc -l`,
-   against each file's own commit count. Copies that never co-change are cheap to leave alone.
+   against each file's own commit count — and require **at least two** shared commits before
+   calling a pair coupled; a single shared commit is one formatting sweep or squashed PR away
+   from noise. Copies that never co-change are cheap to leave alone.
    **Validity guard:** this signal needs history depth. If the involved files have only one or two
    commits each — a young repo, a fresh import, a squashed history — co-change is *uninformative,
    not negative*. Say so in the report and rank on the remaining signals. Never reject a candidate
@@ -168,8 +191,11 @@ shared helper would be small and nameable, and the sites co-change.
 ## Output
 
 **Write the full report to a file**, then return a condensed digest plus the path. Returning the
-report inline without writing the file is a failure of the task. Default path
-`.research/duplication-audit.md`; report the path only after Write returns success.
+report inline without writing the file is a failure of the task. Write to the exact path the
+caller assigned — an orchestrator runs several instances concurrently and gives each its own
+file. Default when the caller gave none: `.research/duplication-audit.md`, after confirming
+`.research/` is gitignored in the audited repo (if not, use a temp path and say so). Report the
+path only after Write returns success.
 
 Structure both file and digest as follows (omit empty sections):
 
@@ -178,7 +204,9 @@ Structure both file and digest as follows (omit empty sections):
 
 ## Coverage
 Detector + version + exact flags. Files scanned, files excluded (with reason).
-Overall duplication % from the detector. DEGRADED banner if no detector ran.
+Overall duplication % from the detector. Existing-helper pass: N helpers
+inventoried, N searched, N not-searchable (named), and the cut rule if the
+inventory was capped. DEGRADED banner if no detector ran.
 
 ## Already solved elsewhere        <- highest value; lead with it
 For each: the existing helper (file:line, signature), each inline

@@ -15,7 +15,7 @@ description: >-
   assumptions / failure-modes / alternatives critic, not a line-by-line bug scanner; do
   not use it to lint a pure code diff. Read-only: it critiques and reports, never edits
   or fixes.
-tools: WebFetch, WebSearch, Read, Grep, Glob, Bash, Write, Bash
+tools: WebFetch, WebSearch, Read, Grep, Glob, Bash, Write
 model: inherit
 maxTurns: 60
 ---

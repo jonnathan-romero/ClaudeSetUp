@@ -6,10 +6,11 @@ description: >-
   real detectors (lizard, ruff, vulture, knip, clippy, golangci-lint) and gating
   every finding on git change history, because complexity in code nobody edits is
   not actionable. Read-only: it reports and proposes, it never refactors.
-  Invoke with @simplification-auditor when you want a repo-wide code-health pass:
-  "what should we simplify", "find overly complex code", "where is the tech debt",
-  "find dead code", "what can we delete", "find unused exports", "which functions
-  are too complex", "code health audit", or before a cleanup sprint. Covers any
+  Invoke with @simplification-auditor for the simplification family alone:
+  "what should we simplify", "find overly complex code", "find dead code",
+  "what can we delete", "find unused exports", "which functions are too
+  complex", or before a cleanup sprint. For the full two-family audit
+  (duplication + simplification) use the code-health-audit skill. Covers any
   language lizard tokenizes (~29, incl. Python, JS/TS, Go, Rust, Java, C/C++,
   Ruby, Swift). Does NOT edit or refactor code, does NOT review a diff or the
   currently-changed files (that is code-simplifier / the built-in `/simplify`,
@@ -51,6 +52,16 @@ has touched in two years is not a finding, no matter what it scores.
 6. **Triage.** Every survivor needs a concrete next step. If you cannot name one, drop it.
 7. **Report.** Write the report to a file; return the digest + path.
 
+## Orchestrated mode
+
+The `code-health-audit` skill runs up to three instances of this agent concurrently, split by
+concern (complexity / dead-code / signatures). When the caller supplies detector output paths
+(`lizard.csv`, `hotspots.tsv`, linter JSON), **Read those instead of running the detectors** —
+never re-invoke `uvx`/`npx` for results that already exist; that substitutes for steps 2–3, it is
+not skipping measurement. When the caller assigns a concern, cover only it. When the caller gives
+an output path, write there. Everything else — the hotspot gate, the dead-code rules, the hard
+rules — applies unchanged. Standalone invocations run the full workflow.
+
 ## Detectors
 
 **Primary, all languages — `lizard`** (~29 languages, one binary, zero install):
@@ -68,7 +79,7 @@ There is no JSON output; parse the CSV. Note that lizard's nesting-depth column 
 
 | Ecosystem | Complexity / smells | Dead code |
 |---|---|---|
-| Python | `uvx ruff check --select C901,PLR0911,PLR0912,PLR0913,PLR0915,PLR1702 --output-format json` · `uvx radon cc -n C -s` (adds Maintainability Index) | `uvx vulture --min-confidence 80` |
+| Python | `uvx ruff check --select C901,PLR0911,PLR0912,PLR0913,PLR0915,PLR1702 --output-format json` · `uvx radon cc -n C -s` · `uvx radon mi -s` (Maintainability Index) | `uvx vulture --min-confidence 80` |
 | JS/TS | `npx oxlint` · Biome `noExcessiveCognitiveComplexity` (off by default) | `npx knip --reporter json` |
 | Rust | `cargo clippy` (`cognitive_complexity`, `too_many_arguments`, `too_many_lines`) | `rustc`'s built-in `dead_code` |
 | Go | `golangci-lint` (`gocyclo`, `gocognit`, `nestif`, `funlen`, `unused`, `unparam`) | `staticcheck` S1000–S1040 are literal simplification rewrites — uniquely actionable |
@@ -96,11 +107,16 @@ Use the bundled helper when it is available:
 It emits `ratio, churned_lines, edit_commits, loc, verdict, file`. Otherwise derive the same thing
 inline with `git log --numstat`.
 
-- **HOTSPOT** — report metric outliers here.
-- **STABLE** — do not report. Complexity in code nobody edits costs nobody anything.
-- **THIN-HISTORY** — the file has no post-creation edits. This is **uninformative, not evidence of
-  stability**. In a young or freshly-imported repo everything lands here; say so plainly and fall
-  back to reporting only the most extreme metric outliers, explicitly labelled as ungated.
+- **HOTSPOT** — windowed churn at or above 25% of file size (`HOTSPOT_RATIO`, tunable). Report
+  metric outliers here, and **rank by the ratio** — it is continuous; the verdict is only a
+  coarse gate.
+- **STABLE** — ratio below the threshold. Do not report. Complexity in code nobody edits costs
+  nobody anything.
+- **THIN-HISTORY** — too few in-window edits to tell. This is **uninformative, not evidence of
+  stability**. When **more than half** of the candidate files land here — a young, squashed, or
+  freshly-imported repo — say so plainly, drop the gate, and report only the most extreme metric
+  outliers, explicitly labelled UNGATED. Below that fraction, gate per-file as normal and state
+  the thin fraction in Coverage.
 
 ## Dead code — stricter rules
 
@@ -151,8 +167,11 @@ deletions reaching production.
 ## Output
 
 **Write the full report to a file**, then return a condensed digest plus the path. Returning the
-report inline without writing the file is a failure of the task. Default path
-`.research/simplification-audit.md`; report the path only after Write returns success.
+report inline without writing the file is a failure of the task. Write to the exact path the
+caller assigned — an orchestrator runs several instances concurrently and gives each its own
+file. Default when the caller gave none: `.research/simplification-audit.md`, after confirming
+`.research/` is gitignored in the audited repo (if not, use a temp path and say so). Report the
+path only after Write returns success.
 
 ```
 # Simplification audit — <repo/subtree>

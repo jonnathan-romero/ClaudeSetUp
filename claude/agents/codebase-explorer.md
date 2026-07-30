@@ -15,7 +15,7 @@ description: >-
   answer needs reading and synthesis across several files. To critique code
   quality use adversarial-reviewer; for doc-vs-code drift use
   docs-drift-auditor — this agent maps and explains, it does not critique.
-tools: Read, Grep, Glob, Bash
+tools: Read, Grep, Glob, Bash, Write
 model: inherit
 maxTurns: 100
 ---

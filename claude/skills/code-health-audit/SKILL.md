@@ -1,8 +1,8 @@
 ---
 name: code-health-audit
-description: Repo-wide code health audit that orchestrates parallel auditor agents across two families - duplication and simplification. ALWAYS trigger when the user wants to audit a whole repository for code quality rather than review a diff - "find repeated code", "what could be generalized", "DRY audit", "what should we simplify", "find overly complex code", "find dead code", "what can we delete", "where is the tech debt", "code health audit", "audit the repo", "what needs refactoring" - or before a refactor or cleanup sprint. Runs the mechanical detectors once (jscpd for clones, lizard plus per-ecosystem linters for complexity and dead code), gates every candidate on git change history, fans out duplication-auditor and simplification-auditor agents, then merges everything into one ranked report. Read-only - proposes changes, never performs them. Do NOT use to review or simplify the current diff or recently-changed files (use /simplify or code-simplifier, which edit in place), or to hunt bugs (use /code-review). For a small repo or one narrow question, invoke @duplication-auditor or @simplification-auditor directly - this skill is the multi-agent orchestrator and it is deliberate overhead.
+description: Repo-wide code health audit that orchestrates parallel auditor agents across two families - duplication and simplification. ALWAYS trigger when the user wants to audit a whole repository for code quality rather than review a diff - "find repeated code", "what could be generalized", "DRY audit", "what should we simplify", "find overly complex code", "find dead code", "what can we delete", "where is the tech debt", "code health audit", "audit the repo for code quality/health", "what needs refactoring" - or before a refactor or cleanup sprint. Runs the mechanical detectors once (jscpd for clones, lizard plus per-ecosystem linters for complexity and dead code), gates every candidate on git change history, fans out duplication-auditor and simplification-auditor agents, then merges everything into one ranked report. Read-only - proposes changes, never performs them. Do NOT use to review or simplify the current diff or recently-changed files (use /simplify or code-simplifier, which edit in place), or to hunt bugs (use /code-review). For a small repo or one narrow question, invoke @duplication-auditor or @simplification-auditor directly - this skill is the multi-agent orchestrator and it is deliberate overhead.
 argument-hint: "[path] [--duplication-only|--simplification-only]"
-allowed-tools: Agent, Task, Read, Grep, Glob, Write, Bash(npx:*), Bash(uvx:*), Bash(git log:*), Bash(git ls-files:*)
+allowed-tools: Agent, Read, Grep, Glob, Write, Bash(~/.claude/skills/code-health-audit/scripts/*), Bash(npx:*), Bash(uvx:*), Bash(cargo clippy:*), Bash(golangci-lint:*), Bash(git log:*), Bash(git ls-files:*)
 ---
 
 # Code health audit (orchestrated)
@@ -45,7 +45,7 @@ identical results.
 
 ```bash
 ~/.claude/skills/code-health-audit/scripts/scan.sh <path> <outdir>     # jscpd → ai report + JSON
-uvx lizard --csv <path> > <outdir>/lizard.csv                          # per-function metrics
+uvx lizard --csv -o <outdir>/lizard.csv <path>                         # per-function metrics
 ~/.claude/skills/code-health-audit/scripts/hotspot.sh '*' '24 months ago' > <outdir>/hotspots.tsv
 ```
 
@@ -58,24 +58,34 @@ gitignored there before writing; if it is not, use a temp directory rather than 
 artifacts in someone's repo.
 
 If `scan.sh` exits 3, `npx` is missing: skip the duplication family's mechanical pass and label that
-half **DEGRADED (mechanical recall unknown)**.
+half **DEGRADED (mechanical recall unknown)**. Any other non-zero exit (offline `npx`, jscpd crash)
+gets the same treatment — skip the mechanical pass, label it DEGRADED, and say what failed.
 
 ### 2. Decide whether to fan out at all
 
-**Collapse to a single agent invocation when the scans are small** — under ~8 clone pairs, or under
-~10 nominated functions surviving the hotspot gate. Say that you are collapsing. Orchestration on a
-small repo is pure overhead and yields a worse report than one agent holding the whole picture.
+**Collapse a family to a single agent invocation when its scan is small** — the duplication family
+under ~8 clone pairs, the simplification family under ~10 lizard-flagged functions living in files
+`hotspots.tsv` marks HOTSPOT. Eyeball the two output files for this; the decision needs an order of
+magnitude, not an exact join. Collapsing one family while fanning out the other is fine. Say that
+you are collapsing. Orchestration on a small repo is pure overhead and yields a worse report than
+one agent holding the whole picture.
 
 ### 3. Fan out, in one message
 
 Spawn every agent in a single message so they run concurrently. Give each one the paths to the scan
-outputs, the exclusion list, and an explicit instruction not to re-run any detector.
+outputs, the exclusion list, an explicit instruction not to re-run any detector, and **a unique
+output path** — `<outdir>/agents/<family>-<lens-or-batch>.md`. The agents default to one shared
+report path; concurrent writers on the default clobber each other and leave the merge nothing to
+read. Require every finding in the file to carry each site as `path:start-end`.
 
 **Duplication family — two axes.**
 
 *Axis A, candidate clusters (dynamic).* Group the jscpd JSON's `duplicates` into clusters by
 transitively joining pairs that share a file. Batch roughly 4–6 clusters per agent, capped at 4
-agents. N follows from what the detector found, never from a directory count.
+agents. N follows from what the detector found, never from a directory count. A hub file (a
+`utils.py` appearing in dozens of pairs) can chain nearly everything into one mega-cluster: when a
+cluster exceeds ~8 pairs, split it by the hub's counterpart directory and say so, rather than
+handing one agent the whole graph.
 
 *Axis B, detector-blind lenses (fixed, 4).* jscpd already owns exact, renamed, and gapped clones —
 that is Axis A's input. Do **not** spend an agent re-finding them. These hunt what a token detector
@@ -88,9 +98,10 @@ structurally cannot see:
 | `domain-constants` | The same magic number, regex, URL, error string, or validation rule in several places | Too few tokens to clear any threshold |
 | `structural` | The same multi-step procedure rebuilt with different calls | Only the *sequence* repeats, not the text |
 
-For `existing-helper`, instruct the agent to build the shared-helper inventory **first** and search
-against it — that inventory is small and bounded, which is what makes the search tractable. If the
-repo has no shared-code layer, skip this lens and say so.
+Paste each lens's table row into its agent's prompt — the lens definitions live here, not in the
+agent body. For `existing-helper`, instruct the agent to build the shared-helper inventory
+**first** and search against it — that inventory is small and bounded, which is what makes the
+search tractable. If the repo has no shared-code layer, skip this lens and say so.
 
 **Simplification family — split by concern, never by directory.** Up to three agents:
 
@@ -107,6 +118,10 @@ enough that one agent covers both it and `complexity`.
 
 Several agents produce overlapping findings. Without a real merge the user gets several reports to
 reconcile by hand, which is worse than one agent.
+
+**Read each agent's report file from `<outdir>/agents/`.** The digests agents return are progress
+signals; the files are the merge input — they hold the per-site spans that dedupe keys on. A
+finding whose file entry lacks spans cannot be deduped; count it separately and say so.
 
 1. **Dedupe.** Key each finding on its normalized span set — `(path, start_line, end_line)` per
    site, path relative to repo root. Two findings match when their spans overlap by more than half
@@ -132,12 +147,16 @@ printf '%s\t%s\n' fileA fileB | ~/.claude/skills/code-health-audit/scripts/cocha
 
 **`THIN-HISTORY` means uninformative, not negative.** A young, squashed, or freshly-imported repo
 shows no co-change and no churn for anything. Treating that as evidence against acting rejects every
-finding. When history is thin, say so, drop the gate, and label those findings **UNGATED**.
+finding. Apply the fallback at a repo level: when **more than half** of a family's candidate files
+come back THIN-HISTORY, say so, drop that family's gate, and label its findings **UNGATED**. Below
+that, gate per-file as normal and report the thin fraction in Coverage — never mix the two modes
+silently.
 
 ### 5. Report
 
-Write one merged report to `.research/code-health-audit.md` and return a digest plus the path. Never
-paste the full report inline, and never emit the per-agent reports separately.
+Write one merged report to `.research/code-health-audit.md` — same gitignore check as step 1; if
+`.research/` is not ignored, write under the temp outdir instead and say so — and return a digest
+plus the path. Never paste the full report inline, and never emit the per-agent reports separately.
 
 ```
 # Code health audit — <repo/subtree>
