@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# realign-plan: open an editable side-by-side diff of a plan file in VS Code
-# and block until the user closes the tab, then write the (possibly edited)
-# result to the final destination.
+# Shared by several skills (handoff, rolling-plan, realign-plan, agent-brief):
+# open an editable side-by-side diff of a file in VS Code and block until the
+# user closes the tab, then write the (possibly edited) result to the final
+# destination.
 #
 # This is a workaround for Claude Code's `/ide` integration not connecting in
 # some remote/Codex setups. It uses the VS Code `code` CLI directly
@@ -12,7 +13,8 @@
 #
 # Usage:
 #   review-diff.sh <dest> <proposed>
-#     <dest>      final path to write (e.g. .plan/01-data-layer-plan.md)
+#     <dest>      final path to write (e.g. .plan/01-data-layer-plan.md,
+#                 .handoffs/handoff-20260730-101500.md, .briefs/01-data-layer.md)
 #                 may or may not already exist; its current content is the LEFT
 #                 (read-only) pane.
 #     <proposed>  path to a file holding the proposed content; becomes the
@@ -48,7 +50,7 @@ if command -v code >/dev/null 2>&1; then
     left="$DEST"
     cleanup_left=""
     if [ ! -f "$DEST" ]; then
-        left="$(mktemp -t realign-plan-empty-XXXX.md)"
+        left="$(mktemp -t review-diff-empty-XXXX.md)"
         cleanup_left="$left"
     fi
 

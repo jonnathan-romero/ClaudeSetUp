@@ -8,14 +8,7 @@ First offer to clean up throwaway files created this session (skip silently if t
 
 ## Filename and location
 
-Save into a `.handoffs/` directory at the root of the current project. Create it if it doesn't exist, and name the file by timestamp:
-
-```bash
-mkdir -p .handoffs
-echo ".handoffs/handoff-$(date +%Y%m%d-%H%M%S).md"
-```
-
-If `.handoffs/` is not already git-ignored, add it to the project's `.gitignore` so handoffs aren't committed.
+Handoffs go in a `.handoffs/` directory at the root of the current project, named `handoff-<timestamp>.md`. Step 1 of the [workflow](#workflow) below sets that up in a single command — run it and nothing else. Existing directory → just write into it. Don't stat it first, don't read or grep `.gitignore`, don't ask: if `.handoffs/` is already there it was git-ignored when it was created.
 
 ## Document structure
 
@@ -32,7 +25,6 @@ _Generated: <ISO date>_
 - Git branch: <branch or "none">
 - Python environment: <venv name or "none">
 - Files modified this session: <list>
-- Original request for current session (verbatim): <quote>
 - Request for next session (verbatim): <quote>
 - Agent assumptions (not user-confirmed): <list>
 
@@ -75,24 +67,30 @@ Before drafting, review the files created **this session** and offer to remove t
 
 ## Workflow
 
-Do not draft the handoff inline in chat. Instead write the proposed content to a temp file and run the bundled `scripts/review-diff.sh`, which opens an **editable side-by-side diff in VS Code** and blocks until the user closes the tab — the user edits the right (proposed) pane directly, and whatever they leave there is saved to the final `.handoffs/` path. This is the review surface; don't ask for changes in chat.
+Do not draft the handoff inline in chat. Instead write the proposed content to a temp file and run the shared `_shared/review_diff/review-diff.sh`, which opens an **editable side-by-side diff in VS Code** and blocks until the user closes the tab — the user edits the right (proposed) pane directly, and whatever they leave there is saved to the final `.handoffs/` path. This is the review surface; don't ask for changes in chat.
 
 ```bash
-# 1. create an empty temp file for the draft
-mkdir -p .handoffs
-mktemp -t handoff-XXXX.md          # prints e.g. /tmp/handoff-ab12.md
+# 1. set up .handoffs/ and print both paths. Creates NO draft file — do not use
+#    `mktemp`: it touches the file, and the Write tool refuses to overwrite a
+#    file it hasn't Read. Writing to a not-yet-existing path just works.
+if [ ! -d .handoffs ]; then
+    mkdir -p .handoffs
+    git rev-parse --git-dir >/dev/null 2>&1 && echo '.handoffs/' >> .gitignore
+fi
+TS=$(date +%Y%m%d-%H%M%S)
+echo "dest:  $PWD/.handoffs/handoff-$TS.md"
+echo "draft: /tmp/handoff-draft-$TS.md"
 
-# 2. (Write tool) write the full handoff document to that temp path —
+# 2. (Write tool) write the full handoff document to the draft path —
 #    NOT a bash heredoc: the doc contains backticks, `$`, and ``` fences that a
 #    quoted heredoc mangles, and a stray `EOF` line silently truncates it.
 
-# 3. open the review diff (compute the timestamped dest inline)
-~/.claude/skills/handoff/scripts/review-diff.sh \
-  ".handoffs/handoff-$(date +%Y%m%d-%H%M%S).md" \
-  /tmp/handoff-ab12.md             # ← the path mktemp printed in step 1
+# 3. open the review diff, using the two paths printed in step 1
+~/.claude/skills/_shared/review_diff/review-diff.sh \
+  <dest> <draft>
 ```
 
-(The script is installed alongside this skill at `~/.claude/skills/handoff/scripts/review-diff.sh`.)
+(The script is shared with the planning skills at `~/.claude/skills/_shared/review_diff/review-diff.sh` — it is not installed under this skill's own folder.)
 
 Why the script instead of a plain `Write`: the VS Code extension's native approve/reject diff only renders when Claude Code's `/ide` integration is connected — which fails in some remote/Codex setups. The script sidesteps that by driving the `code` CLI directly, so the diff works regardless. 
 
@@ -100,12 +98,20 @@ The script degrades gracefully:
 - **No `code` CLI / not in VS Code** → it skips the diff and just writes the file. Report the path and let the user open and edit the `.md` directly.
 
 1. Offer to clean up transient files (see above); skip silently if there's nothing worth removing.
-2. Create a temp file with `mktemp`, write the full draft into it **with the Write tool** (not a heredoc), then run `scripts/review-diff.sh <dest> <proposed>`.
+2. Run step 1's single bash call to get the dest and draft paths, write the full draft to the draft path **with the Write tool** (not a heredoc), then run `~/.claude/skills/_shared/review_diff/review-diff.sh <dest> <draft>`.
 3. The user reviews/edits in the VS Code diff (or, in the fallback, edits the saved `.md` directly).
-4. Print the absolute path and the exact pickup command for the next session:
+4. Print the pickup commands for the next session — the shell one-liner first, since the usual flow is copy → quit → paste into the terminal. Each goes in its own fenced block with nothing else in it, so one click copies a runnable line. The prompt text is **identical** in both; only the `claude "…"` wrapper differs. Use the **absolute** dest path, and keep the prompt free of single quotes, backticks, and `$` so the double-quoted shell string can't break:
+
+New terminal session (copy this, quit Claude Code, paste):
 
 ```
-Read <path>, confirm with user the next steps and continue the work described there.
+claude "Read <abs-path>, confirm the next steps with me, then continue the work described there."
+```
+
+Already inside a fresh session (paste at the prompt):
+
+```
+Read <abs-path>, confirm the next steps with me, then continue the work described there.
 ```
 
 If the user passed arguments via `$ARGUMENTS`, treat them as the focus of the next session and tailor the Next Steps section accordingly.

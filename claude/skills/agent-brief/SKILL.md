@@ -168,7 +168,7 @@ When you want a brief to be **durable, shareable, and pickup-able by other agent
 Writing or rewriting a brief is **substantive** — route it through the editable side-by-side diff so the user stays in control of the contract before an agent runs with it:
 
 ```bash
-~/.claude/skills/agent-brief/scripts/review-diff.sh "$dest" "$proposed"
+~/.claude/skills/_shared/review_diff/review-diff.sh "$dest" "$proposed"
 ```
 
 It opens `code --wait --diff`, blocks until the tab closes, and saves whatever is in the right (editable) pane (emptying it cancels, exit 2). On cancel, stop and ask what the user wants different — don't offload a brief they didn't accept. If `code` isn't available it writes `$dest` directly.

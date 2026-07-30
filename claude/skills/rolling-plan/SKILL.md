@@ -128,10 +128,10 @@ The invariants are easy to talk yourself out of. When you catch one of these tho
 
 ## Reviewing changes to plan files
 
-**Substantive** plan-file changes go through an editable side-by-side diff so the user stays in control. Write the proposed file content to a temp file (use the **Write tool**, not a bash heredoc — plan files contain backticks, `$`, and ``` fences that a heredoc mangles) and run the bundled script:
+**Substantive** plan-file changes go through an editable side-by-side diff so the user stays in control. Write the proposed file content to a temp file (use the **Write tool**, not a bash heredoc — plan files contain backticks, `$`, and ``` fences that a heredoc mangles) and run the shared review script:
 
 ```bash
-~/.claude/skills/rolling-plan/scripts/review-diff.sh "$dest" "$proposed"
+~/.claude/skills/_shared/review_diff/review-diff.sh "$dest" "$proposed"
 ```
 
 It opens `code --wait --diff`, blocks until the user closes the tab, and saves whatever they leave in the right (editable) pane (emptying it cancels). If `code` isn't available it writes `$dest` directly.

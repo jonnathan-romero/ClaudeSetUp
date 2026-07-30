@@ -105,7 +105,7 @@ A resumed realign reads the in-progress marker and continues from the pending it
 Substantive plan-file changes go through the editable side-by-side diff, exactly as in the triad. Write the proposed content to a temp file **with the Write tool** (not a heredoc — plan files contain backticks, `$`, and ``` fences that a heredoc mangles) and run:
 
 ```bash
-~/.claude/skills/realign-plan/scripts/review-diff.sh "$dest" "$proposed"
+~/.claude/skills/_shared/review_diff/review-diff.sh "$dest" "$proposed"
 ```
 
 It opens `code --wait --diff`, blocks until the tab closes, saves whatever is in the right (editable) pane (emptying it cancels, exit 2). On cancel, stop and ask what the user wants different — don't push a reconciliation they didn't accept. If `code` isn't available it writes `$dest` directly.
