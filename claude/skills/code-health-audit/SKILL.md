@@ -1,6 +1,6 @@
 ---
 name: code-health-audit
-description: Repo-wide code health audit that orchestrates parallel auditor agents across two families - duplication and simplification. ALWAYS trigger when the user wants to audit a whole repository for code quality rather than review a diff - "find repeated code", "what could be generalized", "DRY audit", "what should we simplify", "find overly complex code", "find dead code", "what can we delete", "where is the tech debt", "code health audit", "audit the repo for code quality/health", "what needs refactoring" - or before a refactor or cleanup sprint. Runs the mechanical detectors once (jscpd for clones, lizard plus per-ecosystem linters for complexity and dead code), gates every candidate on git change history, fans out duplication-auditor and simplification-auditor agents, then merges everything into one ranked report. Read-only - proposes changes, never performs them. Do NOT use to review or simplify the current diff or recently-changed files (use /simplify or code-simplifier, which edit in place), or to hunt bugs (use /code-review). For a small repo or one narrow question, invoke @duplication-auditor or @simplification-auditor directly - this skill is the multi-agent orchestrator and it is deliberate overhead.
+description: Repo-wide code health audit that orchestrates parallel auditor agents across two families - duplication and simplification. ALWAYS trigger when the user wants to audit a whole repository for code quality rather than review a diff - "find repeated code", "what could be generalized", "DRY audit", "what should we simplify", "find overly complex code", "find dead code", "what can we delete", "where is the tech debt", "code health audit", "audit the repo for code quality/health", "what needs refactoring" - or before a refactor or cleanup sprint. Maps the repo with codebase-explorer scouts, runs the mechanical detectors once (jscpd for clones, lizard plus per-ecosystem linters for complexity and dead code), gates every candidate on git change history, fans out duplication-auditor and simplification-auditor agents, then merges everything into one ranked report. Read-only - proposes changes, never performs them. Do NOT use to review or simplify the current diff or recently-changed files (use /simplify or code-simplifier, which edit in place), or to hunt bugs (use /code-review). For a small repo or one narrow question, invoke @duplication-auditor or @simplification-auditor directly - this skill is the multi-agent orchestrator and it is deliberate overhead.
 argument-hint: "[path] [--duplication-only|--simplification-only]"
 allowed-tools: Agent, Read, Grep, Glob, Write, Bash(~/.claude/skills/code-health-audit/scripts/*), Bash(npx:*), Bash(uvx:*), Bash(cargo clippy:*), Bash(golangci-lint:*), Bash(git log:*), Bash(git ls-files:*)
 ---
@@ -37,11 +37,24 @@ silence and make the survivors earn their place.
 
 ## Workflow
 
-### 1. Scan once, globally
+### 1. Map and scan, in parallel
 
-Run each detector **exactly one time** for the whole audit. Every spawned agent reads the output
-files; none re-invokes a detector, because a fresh `npx`/`uvx` resolve per agent wastes minutes for
-identical results.
+**Spawn the mapping scout(s) first, in the background.** Before any auditor runs, get a repo map
+from `codebase-explorer`: one agent by default; on a large repo or monorepo, up to three, each
+mapping a different **aspect**, never a different directory. Tell each scout to write its map to
+`<outdir>/map-<aspect>.md`, and between them cover:
+
+- the shared-code layer (`utils/`, `lib/`, `common/`, or whatever the repo actually uses), with an
+  inventory of its public helpers — this seeds the duplication family's existing-helper pass;
+- module boundaries, layering, and placement conventions — this is what the merge step's placement
+  proposals must respect;
+- generated, vendored, and test trees — this feeds the exclusion list.
+
+If the `codebase-explorer` agent is unavailable, proceed without a map and say so in Coverage.
+
+**While the scouts work, run the detectors.** Run each detector **exactly one time** for the whole
+audit. Every spawned agent reads the output files; none re-invokes a detector, because a fresh
+`npx`/`uvx` resolve per agent wastes minutes for identical results.
 
 ```bash
 ~/.claude/skills/code-health-audit/scripts/scan.sh <path> <outdir>     # jscpd → ai report + JSON
@@ -72,9 +85,10 @@ one agent holding the whole picture.
 
 ### 3. Fan out, in one message
 
-Spawn every agent in a single message so they run concurrently. Give each one the paths to the scan
-outputs, the exclusion list, an explicit instruction not to re-run any detector, and **a unique
-output path** — `<outdir>/agents/<family>-<lens-or-batch>.md`. The agents default to one shared
+Collect the scouts' maps first — fan-out waits on both the maps and the detectors. Then spawn
+every agent in a single message so they run concurrently. Give each one the paths to the scan
+outputs **and the map file(s)**, the exclusion list, an explicit instruction not to re-run any
+detector, and **a unique output path** — `<outdir>/agents/<family>-<lens-or-batch>.md`. The agents default to one shared
 report path; concurrent writers on the default clobber each other and leave the merge nothing to
 read. Require every finding in the file to carry each site as `path:start-end`.
 
@@ -101,7 +115,8 @@ structurally cannot see:
 Paste each lens's table row into its agent's prompt — the lens definitions live here, not in the
 agent body. For `existing-helper`, instruct the agent to build the shared-helper inventory
 **first** and search against it — that inventory is small and bounded, which is what makes the
-search tractable. If the repo has no shared-code layer, skip this lens and say so.
+search tractable. Seed it from the scout map's helper inventory: verify against the code rather
+than rebuilding from scratch. If the repo has no shared-code layer, skip this lens and say so.
 
 **Simplification family — split by concern, never by directory.** Up to three agents:
 
@@ -187,6 +202,6 @@ DEGRADED / UNGATED banners where they apply.
   changes only.
 - **Every finding names a concrete next step.** Bug-prediction output that isn't actionable changes
   no behavior — this is measured, not theoretical. No next step, no entry.
-- **Propose placement inside the repo's existing structure.** Never invent a `common/` in a repo
-  with no such convention.
+- **Propose placement inside the repo's existing structure.** The scout map documents that
+  structure — cite it. Never invent a `common/` in a repo with no such convention.
 - **Migrations are append-only history.** Never propose consolidating or simplifying them.

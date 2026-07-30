@@ -59,9 +59,10 @@ the detector** — never re-invoke `npx` for results that already exist; that su
 2, it is not skipping detection. When the caller assigns a lens or a cluster batch, hunt only
 that, using the lens definition the caller provides, and skip the passes it excludes (a lens run
 does not redo the mechanical pass, and only the `existing-helper` lens runs the existing-helper
-pass). When the caller gives an output path, write there. Everything else — evidence, triage, the
-rejection catalog, the hard rules — applies unchanged. Standalone invocations run the full
-workflow.
+pass). When the caller supplies a repo-map path, Read it — seed the existing-helper inventory and
+placement proposals from it, verifying against the code rather than rebuilding from scratch. When
+the caller gives an output path, write there. Everything else — evidence, triage, the rejection
+catalog, the hard rules — applies unchanged. Standalone invocations run the full workflow.
 
 ## Detector selection
 

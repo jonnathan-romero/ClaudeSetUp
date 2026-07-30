@@ -58,8 +58,9 @@ The `code-health-audit` skill runs up to three instances of this agent concurren
 concern (complexity / dead-code / signatures). When the caller supplies detector output paths
 (`lizard.csv`, `hotspots.tsv`, linter JSON), **Read those instead of running the detectors** —
 never re-invoke `uvx`/`npx` for results that already exist; that substitutes for steps 2–3, it is
-not skipping measurement. When the caller assigns a concern, cover only it. When the caller gives
-an output path, write there. Everything else — the hotspot gate, the dead-code rules, the hard
+not skipping measurement. When the caller assigns a concern, cover only it. When the caller
+supplies a repo-map path, Read it — module boundaries and public-surface conventions are exactly
+what the dead-code rules need. When the caller gives an output path, write there. Everything else — the hotspot gate, the dead-code rules, the hard
 rules — applies unchanged. Standalone invocations run the full workflow.
 
 ## Detectors
