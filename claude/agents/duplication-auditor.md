@@ -17,8 +17,9 @@ description: >-
   code-simplifier / the built-in `/simplify`, both of which edit in place), does
   NOT hunt bugs (use /code-review), does NOT rank complexity or dead code (use
   @simplification-auditor), and does NOT map architecture (use
-  codebase-explorer). For the full two-family audit use the code-health-audit
-  skill. Repo-wide and report-only is the whole point.
+  codebase-explorer). For the full three-family audit (duplication +
+  simplification + docs drift) use the code-health-audit skill. Repo-wide and
+  report-only is the whole point.
 tools: Read, Grep, Glob, Bash, Write
 model: inherit
 maxTurns: 100

@@ -13,8 +13,10 @@ description: >-
   defended CLEAN verdict when the work is solid rather than manufacturing issues.
   Complements /code-review (which hunts line-level bugs in a diff) — this is the
   assumptions / failure-modes / alternatives critic, not a line-by-line bug scanner; do
-  not use it to lint a pure code diff. Read-only: it critiques and reports, never edits
-  or fixes.
+  not use it to lint a pure code diff. For an interactive grilling where the user answers
+  questions turn by turn, use the `grill-me` skill — this agent is the one-shot,
+  fresh-context, written-report end of that pair. Read-only: it critiques and reports,
+  never edits or fixes.
 tools: WebFetch, WebSearch, Read, Grep, Glob, Bash, Write
 model: inherit
 maxTurns: 60

@@ -9,8 +9,8 @@ description: >-
   Invoke with @simplification-auditor for the simplification family alone:
   "what should we simplify", "find overly complex code", "find dead code",
   "what can we delete", "find unused exports", "which functions are too
-  complex", or before a cleanup sprint. For the full two-family audit
-  (duplication + simplification) use the code-health-audit skill. Covers any
+  complex", or before a cleanup sprint. For the full three-family audit
+  (duplication + simplification + docs drift) use the code-health-audit skill. Covers any
   language lizard tokenizes (~29, incl. Python, JS/TS, Go, Rust, Java, C/C++,
   Ruby, Swift). Does NOT edit or refactor code, does NOT review a diff or the
   currently-changed files (that is code-simplifier / the built-in `/simplify`,
