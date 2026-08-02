@@ -1,6 +1,6 @@
 ---
 name: add-logging
-description: Add smart logging (logger.debug / info / warning / error) to a specified Python file. ALWAYS trigger when the user says "add logging to this file", "add logger.info/debug/warning/error", "instrument this file with logging", "put log statements in <file.py>", "add log lines here", "wire up logging for this module", or names a .py file and asks to add/insert logging. Reads the target file plus one or two hops of surrounding code (callers and callees) to place logs at the right levels, adds `logger = logging.getLogger(__name__)` at the top, and uses lazy %-formatting. Insertion-only — adds logging lines, never edits existing logic. Do NOT use to configure project-wide logging (handlers / basicConfig / dictConfig), to remove or clean up existing logs, to set up a logging config file, or for general code review / bug hunting.
+description: Add smart logging (logger.debug / info / warning / error) to a specified Python file. ALWAYS trigger when the user says "add logging to this file", "add logger.info/debug/warning/error", "instrument this file with logging", "put log statements in <file.py>", "add log lines here", "wire up logging for this module", or names a .py file and asks to add/insert logging. Reads the target file plus one or two hops of surrounding code (callers and callees) to place logs at the right levels, adds `logger = logging.getLogger(__name__)` at the top, and uses lazy %-formatting. Insertion-only — adds logging lines, never edits existing logic. Do NOT use to configure project-wide logging (handlers / basicConfig / dictConfig), to remove or clean up existing logs, to set up a logging config file, or for general code review / bug hunting. For repo-wide logging cleanup — level audits and demoting noisy logs — use the `@logging-plumber` agent instead; this skill instruments one file.
 argument-hint: "Path to the .py file to instrument with logging"
 ---
 
@@ -12,7 +12,10 @@ Add logging to the one Python file the user names (`$ARGUMENTS`). Instrument tha
 
 ## Set up the logger
 
-- Ensure `import logging` is present (add it among the stdlib imports if missing).
+- Ensure `import logging` is present (add it among the stdlib imports if missing) — always **after**
+  the module docstring and after any `from __future__` import. Both are pure additions that still
+  break the file: a line above the docstring silently sets `__doc__` to `None`, and anything above
+  `from __future__` is a `SyntaxError`.
 - Add, after the imports and before the first `def`/`class`: `logger = logging.getLogger(__name__)`.
 - **Library / package module** (anything importable under a package): use `logging.getLogger(__name__)`. Never add `basicConfig()`, handlers, or `setLevel` on the root logger — configuring output is the application entrypoint's job, not a module's. (Ruff `LOG015` flags root-logger calls.)
 - **Script / entrypoint / notebook** (a `__main__` runner): detect and match the project's own logger utility if it ships one (commonly a `log_utils` module exposing a `get_logger(name)` — check the imports of sibling scripts). Otherwise `logging.getLogger(__name__)`.
@@ -21,10 +24,11 @@ Add logging to the one Python file the user names (`$ARGUMENTS`). Instrument tha
 ## Process
 
 1. **Understand the file.** Read it top to bottom: the public surface, control flow, the error / `except` paths, external I/O (network, disk, DB, subprocess), branch and fallback points, and loop boundaries. These are where a log earns its place.
-2. **Read one or two hops of surrounding code** — the callers / importers upstream and the functions it calls downstream — for two reasons: (a) learn the project's existing logging style and match it (`getLogger` vs project util; lazy `%` vs f-strings; message tone), and (b) avoid double-logging something a caller or callee already records. Do not map the whole repo.
-3. **Insert the logger line** (see above).
-4. **Add logging** at the right levels and places (rubrics below).
-5. **Verify** (see below), then show the diff and let the user review — placement is a judgment call, so their read of the diff is the real acceptance test.
+2. **Read one or two hops of surrounding code** — the callers / importers upstream and the functions it calls downstream — for two reasons: (a) learn the project's existing logging style and match it (`getLogger` vs project util; lazy `%` vs f-strings; message tone), and (b) avoid double-logging something a caller or callee already records. Also check the file's tests for `caplog` / `assertLogs` / `assertNoLogs` / record-count assertions — a new log at or above the capture threshold fails an exact-count or no-logs test (with `log_level` unset in pytest config, DEBUG/INFO insertions never even create a record; a configured `log_level` makes them test-visible). Do not map the whole repo.
+3. **Save a pre-edit copy** — `cp <file> /tmp/before-<name>.py`. The verification below needs a before/after pair, and `git diff` is blind to untracked files, so a copy is the only form that always works.
+4. **Insert the logger line** (see above).
+5. **Add logging** at the right levels and places (rubrics below).
+6. **Verify** (see below), then show the diff and let the user review — placement is a judgment call, so their read of the diff is the real acceptance test.
 
 ## Levels — where each belongs
 
@@ -58,6 +62,17 @@ This is the one way an "insertion-only" change can still alter behavior. A log a
 - ✓ `logger.debug("stack depth %d", len(stack))`
 
 If the value you want is only reachable by calling something with a side effect, skip that log.
+(Strictly, nothing but a literal is *provably* inert — `len(x)` dispatches `__len__` and an
+attribute may be a `@property` that does I/O — so prefer parameters and already-computed plain
+locals; the verifier below flags anything stronger for review.)
+
+Two more additions that fail at runtime, not at review:
+
+- **`extra=` keys must not collide with `LogRecord` attributes** (`message`, `asctime`, `name`,
+  `module`, `args`, `filename`, `lineno`, `process`, `thread`, `exc_info`, …) — a collision raises
+  `KeyError` at the call site, in production, on exactly the code path being logged.
+- **A malformed `%`-format never raises** — the record is lost, the error goes to stderr at best
+  and nowhere at a disabled level. Tests will not catch it; only the static gate below does.
 
 ## Untrusted input (CWE-117) — flag, don't sanitize
 
@@ -73,10 +88,26 @@ Logging attacker-controlled strings raw is log injection (CWE-117): embedded new
 
 ## Verify
 
-Because the change is insertion-only, the invariant is **pure addition** — prove it:
+Because the change is insertion-only, the invariant is **pure addition — and a `+`-only diff does
+not prove it**. A log inserted above a docstring is a `+`-only diff that silently sets `__doc__` to
+`None`; one inserted above `from __future__` is a `+`-only diff that stops the file compiling; and
+`git diff` shows nothing at all for an untracked file. Prove it mechanically instead:
 
-1. **Parses:** `python -m py_compile <file>` (or import it).
-2. **Nothing removed or rewritten:** `git diff -- <file>` shows only added (`+`) lines, and every added line is `import logging`, the `logger = …` assignment, or a `logger.<level>(...)` call. Any `-` line (other than a `+`/`-` pair that is purely re-indentation you introduced — avoid even that) is a bug — revert it. If the file isn't under git, diff against a copy you saved before editing.
+1. **Run the shared verifier** on the pre-edit copy from Process step 3:
+
+   ```bash
+   ~/.claude/skills/_shared/verify_logging_only/verify-logging-only.sh /tmp/before-<name>.py <file>
+   ```
+
+   Exit `0` proves containment: nothing but logging statements (plus the sanctioned
+   `import logging` / `logger = …` setup) changed, every added log's arguments sit in the safe
+   syntactic subset, no docstring was demoted, and the file still compiles. Exit `1` — the edit
+   touched non-log code: revert and redo. Exit `2` — contained but unprovable (an argument outside
+   the allowlist, e.g. a call, subscript, or f-string interpolation): re-check that hunk against
+   the footgun rule, then fix it or keep it deliberately with a note in your summary.
+2. **Gate format args statically:** `uvx ruff check --isolated --select PLE1205,PLE1206,G <file>`.
+   This is the only net for malformed `%`-formats — they are swallowed at runtime, so neither tests
+   nor a smoke run will surface them.
 3. **No side-effect args:** re-scan every added log call against the footgun rule above.
 
-Then show the diff and report: what you logged and at which levels, anything flagged for sanitization (CWE-117), and anything you deliberately left un-logged.
+Then show the diff and report: what you logged and at which levels, anything flagged for sanitization (CWE-117), any exit-`2` hunk you kept deliberately, and anything you deliberately left un-logged.
