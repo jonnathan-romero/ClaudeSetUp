@@ -18,7 +18,7 @@ no surface for a family — and say which you ran either way:
 | Family | Hunts | Scan artifact | Agent |
 |---|---|---|---|
 | **Duplication** | Logic that exists in more than one place and should be consolidated | `jscpd` | `@duplication-auditor` |
-| **Simplification** | Complexity, deep nesting, long signatures, dead code | `lizard` + per-ecosystem linters | `@simplification-auditor` |
+| **Simplification** | Complexity, deep nesting, long signatures, dead code, reinvented wheels | `lizard` + per-ecosystem linters | `@simplification-auditor` |
 | **Documentation drift** | Prose docs (README, CLAUDE.md, AGENTS.md, install scripts, docstrings, comments) that disagree with what the code actually does | doc-surface inventory (no mechanical detector exists) | `@docs-drift-auditor` |
 
 Docs drift belongs here and not in a separate pass: a doc that lies costs a human — or Claude — the
@@ -50,6 +50,12 @@ kind:
 The empirical work behind the first two is consistent: controlling for size and change count erases
 most of the effect attributed to static metrics, and high complexity scores predict nothing on their
 own. Default to silence there and make the survivors earn their place.
+
+**One concern inside the simplification family is exempt: reinvented wheels.** Code hand-rolling
+what the stdlib or a declared dependency already provides is wrong in its edge cases whether or not
+the file churns, and the fix is replacement with tested code rather than a readability judgment.
+That concern is gated on the repo's own manifest and runtime version floor instead — see the
+auditor's tier rules. Never drop a reinvention finding for lack of churn.
 
 **That reasoning does not transfer to docs, and applying it there would be a bug.** A README line
 contradicted by current code misleads the next reader whether the file was touched yesterday or
@@ -157,16 +163,24 @@ agent body. For `existing-helper`, instruct the agent to build the shared-helper
 search tractable. Seed it from the scout map's helper inventory: verify against the code rather
 than rebuilding from scratch. If the repo has no shared-code layer, skip this lens and say so.
 
-**Simplification family — split by concern, never by directory.** Up to three agents:
+**Simplification family — split by concern, never by directory.** Up to four agents:
 
 | Agent | Covers |
 |---|---|
 | `complexity` | lizard/ruff/clippy/gocyclo outliers **intersected with hotspots**, plus the concrete extraction each one needs |
 | `dead-code` | vulture/knip/`unused` candidates, with the dynamic-reachability searches the auditor's rules require |
 | `signatures` | Long parameter lists, deep nesting, over-long functions — the smells that read as API friction rather than internal tangle |
+| `reinvention` | Code hand-rolling what the stdlib or an already-declared dependency provides, bounded by the manifest inventory and gated on the repo's runtime version floor |
 
 Drop the `dead-code` agent when no dead-code detector ran. Drop `signatures` when the repo is small
-enough that one agent covers both it and `complexity`.
+enough that one agent covers both it and `complexity`. Drop `reinvention` only when there is no
+manifest **and** no stdlib surface to inventory — and say so in Coverage; unlike the other three it
+has no detector output to be empty, so a missing scan artifact is never the reason.
+
+**`reinvention` is the one concern the family's churn gate does not apply to**, and step 2's collapse
+heuristic does not describe it either — its surface is the size of the dependency inventory, not the
+lizard hit count. Collapse it into `complexity` when the repo declares under ~10 direct dependencies;
+otherwise give it its own agent even when the rest of the family collapses.
 
 **Docs family — split by concern, never by doc file.** Up to three agents. The split partitions
 `@docs-drift-auditor`'s 10-item drift checklist; paste the assigned items into each agent's prompt
@@ -221,6 +235,13 @@ finding whose file entry lacks spans cannot be deduped; count it separately and 
      applies: the code may be the bug. Demote the deletion to *possible defect — verify the
      documented behavior still works* and keep both findings linked. Never resolve it by dropping
      the docs finding.
+   - *Supersession (duplication ↔ reinvention).* When duplication proposes extracting three copies
+     into a new helper and reinvention finds the stdlib or a declared dependency already does that
+     exact job, **the reinvention finding wins outright** — the fix is deleting all three and
+     calling the library, not writing a fourth version of it in `utils/`. Merge them into one entry
+     filed under `## Already in the toolbox` (never under a duplication heading, which would
+     re-surface the superseded extraction), carrying every site from the duplication finding, and
+     say which proposal was superseded.
    - *Drift the proposals themselves create.* Every accepted extraction, deletion, or signature
      change invalidates any doc that describes it. Walk the accepted list against the docs family's
      doc surface and name the doc updates each proposal implies. This is a report section, not an
@@ -266,6 +287,8 @@ nothing says so explicitly, and a family that did not run says why.
 DEGRADED / UNGATED banners where they apply.
 
 ## Already solved elsewhere     <- duplication: the shared location already exists
+## Already in the toolbox       <- reinvention: stdlib / declared dep already does it,
+                                   Tier 1 (no new dep) before Tier 2 (asked as questions)
 ## Extract now                  <- duplication
 ## Simplify now                 <- complexity, each with a concrete next step
 ## Possibly unreachable         <- dead code, split into safe-to-delete vs is-this-a-defect
@@ -299,6 +322,9 @@ DEGRADED / UNGATED banners where they apply.
   theoretical. No next step, no entry.
 - **Propose placement inside the repo's existing structure.** The scout map documents that
   structure — cite it. Never invent a `common/` in a repo with no such convention.
+- **Every package name in the merged report traces to a lockfile entry or a registry probe.** Never
+  to a spawned agent's recollection. A hallucinated package name that a reader installs is a
+  supply-chain compromise, so an unverified name is dropped, not caveated.
 - **Migrations are append-only history.** Never propose consolidating or simplifying them.
 - **Never run the repo's own code.** No install scripts, no build or test commands, no documented
   example commands, no `<entrypoint> --help`. CLI flags and install steps are verified by reading
