@@ -1,6 +1,6 @@
 ---
 name: code-health-audit
-description: Repo-wide health audit that orchestrates parallel auditor agents across four co-equal families - duplication, simplification, documentation drift, and architecture. ALWAYS trigger when the user wants a WHOLE-REPO audit spanning more than one family, rather than a diff review or a single-family ask - "code health audit", "audit the repo for code quality/health", "where is the tech debt", "what needs refactoring", "full audit of this repo", "find everything worth cleaning up", "duplication and dead code and doc drift" - or before a refactor, a cleanup sprint, or a release. Single-family phrasings ("find dead code", "DRY audit", "are the docs accurate", "is this repo structured right") belong to the individual auditors - route there unless the ask spans families. Maps the repo with codebase-explorer scouts, runs the detectors once (jscpd, lizard, per-ecosystem linters, import graphs), inventories the doc surface, applies each family's own evidence gate, fans out the four auditors, then merges into one ranked report. Read-only - proposes changes, never performs them. Do NOT use to review or simplify the current diff or recently-changed files (use /simplify or code-simplifier, which edit in place), or to hunt bugs (use /code-review). To actually FIX comments and log levels repo-wide rather than report on them, use the code-housekeeping skill - it edits, this one never does. For a small repo or one narrow question, invoke that family's auditor directly - this skill is the multi-agent orchestrator and it is deliberate overhead.
+description: Repo-wide health audit that orchestrates parallel auditor agents across four co-equal families - duplication, simplification, documentation drift, and architecture. ALWAYS trigger when the user wants a WHOLE-REPO audit spanning more than one family, rather than a diff review or a single-family ask - "code health audit", "audit the repo for code quality/health", "where is the tech debt", "what needs refactoring", "full audit of this repo", "find everything worth cleaning up", "duplication and dead code and doc drift" - or before a refactor, a cleanup sprint, or a release. Single-family phrasings ("find dead code", "DRY audit", "are the docs accurate", "is this repo structured right") belong to the individual auditors - route there unless the ask spans families. Maps the repo with codebase-explorer scouts, runs the detectors once (jscpd, lizard, per-ecosystem linters, import graphs), inventories the doc surface, applies each family's own evidence gate, fans out the four auditors, then merges into one ranked report. Read-only - proposes changes, never performs them. Do NOT use to review or simplify the current diff or recently-changed files (use /simplify or code-simplifier, which edit in place), or to hunt bugs (use /code-review). To actually FIX comments and log levels repo-wide rather than report on them, use the code-housekeeping skill - it edits, this one never does. For a small repo or one narrow question, invoke that family's auditor directly - this skill is the multi-agent orchestrator.
 argument-hint: "[path] [--duplication-only|--simplification-only|--docs-only|--architecture-only]"
 allowed-tools: Agent, Read, Grep, Glob, Write, Bash(~/.claude/skills/code-health-audit/scripts/*), Bash(npx:*), Bash(uvx:*), Bash(uv run:*), Bash(go list:*), Bash(cargo clippy:*), Bash(golangci-lint:*), Bash(git log:*), Bash(git ls-files:*)
 ---
@@ -118,16 +118,22 @@ uvx ruff analyze graph <path> 2>/dev/null > <outdir>/imports.json      # Python 
 Then add the per-ecosystem detectors that apply to the languages actually present — `ruff` and
 `vulture` for Python, `knip` for JS/TS, `clippy` for Rust, `golangci-lint` for Go. Detect the
 languages from `git ls-files`; do not run a Python linter on a Go repo. For the architecture
-family's import graph, substitute `npx madge --circular --json` or `npx depcruise --no-config
---output-type json` on a JS/TS repo and `go list -e -json ./...` on a Go repo; on a language with
-none of these, that family runs on git evidence alone and Coverage says so.
+family's import graph, substitute `npx --yes madge --circular --json --extensions
+js,jsx,ts,tsx,mjs,cjs` or `npx --yes dependency-cruiser --no-config --output-type json --` on a
+JS/TS repo and `go list -e -json ./...` on a Go repo; on a language with none of these, that family
+runs on git evidence alone and Coverage says so. Those flags are not optional garnish — madge
+defaults to `.js` only and silently finds nothing in a TypeScript repo, and dependency-cruiser
+aborts without `--no-config` because its default is to hunt for a config file.
 
 **Also run the co-change nomination pass once here** — both `@architecture-auditor` and
 `@duplication-auditor` consume it, for opposite purposes, and it is far too expensive to compute
 twice. Use the one-pass `git log --no-merges --name-only` + awk co-occurrence sweep from the
 architecture auditor's body, capping changesets at 30 files so a single formatting sweep does not
 couple everything it touched, and write the ranked pairs to `<outdir>/cochange-candidates.tsv`.
-State the cap and the window in Coverage.
+State the cap and the window in Coverage. **Strip `uniq -c`'s count prefix with `awk '{print
+$2"\t"$3}'` before writing that file** — `cochange.sh` splits on tabs, so an unstripped count rides
+along inside the first path, every lookup returns zero commits, and the whole set reports
+THIN-HISTORY instead of failing.
 
 **The architecture family also needs a non-scan input: the repo's declared architecture.** Collect
 `.importlinter` / `[tool.importlinter]`, `tach.toml`, `.dependency-cruiser.*`, boundary rules in
@@ -153,7 +159,8 @@ family has no mechanical pass to lose, so a detector failure never degrades it.
 **Collapse a family to a single agent invocation when its surface is small** — the duplication
 family under ~8 clone pairs, the simplification family under ~10 lizard-flagged functions living in
 files `hotspots.tsv` marks HOTSPOT, the docs family under ~10 files in `docs.txt` **and** no
-install/setup script. Eyeball the output files for this; the decision needs an order of magnitude,
+install/setup script, the architecture family under ~10 top-level modules or with no import-graph
+detector available for any language present. Eyeball the output files for this; the decision needs an order of magnitude,
 not an exact join. Collapsing one family while fanning out another is fine. Say that you are
 collapsing. Orchestration on a small repo is pure overhead and yields a worse report than one agent
 holding the whole picture.
@@ -284,7 +291,10 @@ finding whose file entry lacks spans cannot be deduped; count it separately and 
    - *Docs drift:* a docs finding has **two** locations, so a single-span key would send every one
      of them to the un-dedupable pile. Key on the pair `(doc_path:line, code_path:line)`; two
      findings match when both sides refer to the same claim, allowing a few lines of slack on each.
-   Keep the better-argued one; merge the evidence.
+   - *Architecture:* key on the unordered module/directory pair the finding concerns, not on
+     line spans — a boundary finding is about two modules, and the same pair reached from the
+     cycle detector and from co-change is one finding, not two.
+   Keep the better-argued one; merge the evidence — for architecture, keep the higher tier.
 2. **Cross-family interactions are the payoff — resolve them, don't average them.**
    - *Conflict (duplication ↔ simplification).* Duplication says *extract these three copies into a
      helper*, simplification says *this abstraction is already too tangled — inline it*. When both
@@ -344,8 +354,10 @@ shows no co-change and no churn for anything. Treating that as evidence against 
 finding. Apply the fallback at a repo level: when **more than half** of a family's candidate files
 come back THIN-HISTORY, say so, drop that family's gate, and label its findings **UNGATED**. Below
 that, gate per-file as normal and report the thin fraction in Coverage — never mix the two modes
-silently. This applies to duplication and simplification; docs findings are never THIN-HISTORY
-because they were never history-gated.
+silently. This applies to duplication, simplification, and architecture's T3 tier — on a thin-history repo
+that family drops to T1/T2 and Coverage says so, rather than reporting a clean structure it never
+had the evidence to assess. Docs findings are never THIN-HISTORY because they were never
+history-gated.
 
 ### 5. Report
 

@@ -13,12 +13,13 @@ description: >-
   file be split", "this module does too much", "are the module boundaries in the
   right place", "where does this file belong", "audit the architecture",
   "critique this repo's layout", "is this class hierarchy too deep". Deepest on
-  Python and JS/TS; elsewhere it runs on git evidence alone and says so. Does
-  NOT edit or move any file, does NOT rank per-function complexity, nesting, or
-  dead code (use @simplification-auditor — those measure functions, this
+  Python and JS/TS; elsewhere it runs on git evidence alone and says so. For the
+  full four-family audit (duplication + simplification + docs drift +
+  architecture) use the code-health-audit skill. Does NOT edit or move any
+  file, does NOT rank per-function complexity, nesting, or dead code (use @simplification-auditor — those measure functions, this
   measures files and modules), does NOT find duplicated logic or place a helper
   inside the structure as it stands (use @duplication-auditor), does NOT MAP the
-  architecture but critiques one already mapped (use codebase-explorer), does
+  architecture but critiques one already mapped (use @codebase-explorer), does
   NOT check whether a documented layout matches the tree (use
   @docs-drift-auditor), and does NOT design a new architecture or critique a
   proposed one (use the built-in Plan agent, or @adversarial-reviewer).
@@ -57,7 +58,7 @@ Report the tier on every finding. Rank by tier first, always.
 
 | Tier | The evidence | Why it holds |
 |---|---|---|
-| **T1 — Declared intent** | The repo declared a structural rule and the code breaks it: an `import-linter` contract, `tach.toml`, a `dependency-cruiser` rule, `eslint-plugin-boundaries` config, an ADR, or an explicit structural sentence in `CLAUDE.md`/`AGENTS.md`/`README` | The rule is the team's, not yours. You are reporting *their* violated intent, which is not a matter of taste and cannot be an unwanted opinion |
+| **T1 — Declared intent** | The repo declared a structural rule and the code breaks it: an `import-linter` contract, `tach.toml`, a `dependency-cruiser` rule, `eslint-plugin-boundaries` config, an ADR, or an explicit structural sentence in `CLAUDE.md`/`AGENTS.md`/`README` — but a prose *layout list* contradicted by the tree is docs drift, not T1; T1 needs a rule the code was meant to obey, not a description of where files currently sit | The rule is the team's, not yours. You are reporting *their* violated intent, which is not a matter of taste and cannot be an unwanted opinion |
 | **T2 — Mechanical consequence** | The structure provably breaks something independent of anyone's preference — packaging silently drops a directory, an import cycle actually fails at import time, a deep import reaches past what the package exports | Demonstrable by running nothing and quoting two lines |
 | **T3 — Cross-boundary co-change** | Files in *different* modules change together far above this repo's own intra-module baseline, with no import edge between them | The only detector in this space with published accuracy, and it sees what no static tool can |
 | **T4 — Placement inconsistency** | One file's imports look unlike those of its folder-peers | Weakest tier. **Phrase as a question, never an instruction** |
@@ -109,13 +110,40 @@ the full workflow.
 |---|---|---|
 | **Python** | `uvx ruff analyze graph .` → JSON adjacency list, no config, no install, no import of the target | `uv run --with grimp --no-project python -c '...'` for cycles and fan-in/fan-out; `uvx --from pylint pyreverse -o dot -d <scratch> <pkg>` for hierarchies |
 | **Python (declared intent)** | `uvx --from import-linter lint-imports` — **only when a contract file already exists** | `uvx tach check` only when `tach.toml` exists |
-| **JS/TS** | `npx madge --circular --json <dir>` (exit 1 on cycles) · `npx depcruise --no-config --output-type json <dir>` | `npx depcruise --output-type json --metrics` gives Ca/Ce/instability without a build |
+| **JS/TS** | `npx --yes madge --circular --json --extensions js,jsx,ts,tsx,mjs,cjs <dir>` (exit 1 on cycles) · `npx --yes dependency-cruiser --no-config --output-type json -- <dir>` | add `--metrics` to the dependency-cruiser run for Ca/Ce/instability per folder, with no build |
 | **Go** | `go list -e -json ./...` — `-e` always, and **never `-deps`**, which forces a transitive module closure that can hit the network | |
 | **Everything else** | None. Run the git evidence only and label the family DEGRADED for that language | |
 
 `ruff analyze graph` prints an experimental warning to stderr and clean JSON to stdout; redirect
 stderr, do not parse around it. If no import-graph detector applies, T2 and T4 findings are mostly
 unavailable — say so and lean on T1 and T3, which need no language support.
+
+Three flags in that table are load-bearing and each fails silently without them:
+
+- **madge defaults to `fileExtensions: ['js']`.** Pointed at a TypeScript repo without
+  `--extensions`, it finds nothing and reports success. An empty madge result is never evidence of
+  no cycles until you have confirmed the extension list covers the repo.
+- **`depcruise` is not the npm package name** — the package is `dependency-cruiser`, which is also
+  one of its six bin names, so `npx --yes dependency-cruiser` resolves while `npx depcruise` does
+  not. And its default is `--config true`, so without `--no-config` it aborts hunting for a config
+  file it will not find.
+- **An unrecognised `--output-type` does not error**; dependency-cruiser silently falls back to an
+  identity reporter. If the output does not parse as the expected shape, suspect the flag before
+  suspecting the repo. Its `json` reporter also always exits 0, so never read violations from the
+  exit code — read them from `summary.violations`.
+
+**And dependency-cruiser needs the project's own TypeScript to see `.ts` at all.** Measured on a
+two-file TypeScript fixture with a real cycle, `npx --yes dependency-cruiser --no-config` returned
+`totalCruised: 0` — it bundles no transpiler and probes for one in the project, so under bare `npx`
+it silently cruises nothing. On the same fixture madge with `--extensions` found the cycle. **On a
+TypeScript repo without an installed toolchain, prefer madge and label dependency-cruiser
+DEGRADED**; `totalCruised: 0` is the tell, and it is never evidence of a clean graph.
+
+Cycles in dependency-cruiser's JSON live on `modules[].dependencies[].circular` with the path in
+`.cycle`, not on the module. Madge's `--circular --json` returns an array of cycles, each an array
+of relative paths. Both read files as text and never import the audited code; dependency-cruiser
+*does* execute its own config file and any `--webpack-config` you pass, which is precisely why the
+table pins `--no-config`.
 
 **Never invoke these**, each for a specific reason:
 
@@ -158,8 +186,14 @@ git log --no-merges --since='24 months ago' --format='C %H' --name-only -- '<pat
   /^C /{ flush(); next }
   NF { f[++n]=$0 }
   END { flush() }
-' | sort | uniq -c | sort -rn | head -200
+' | sort | uniq -c | sort -rn | head -200 | awk '{print $2"\t"$3}'
 ```
+
+**That trailing `awk` is not optional.** `uniq -c` prefixes each line with a right-aligned count, so
+without it the first field arrives at Stage 2 as `"      4 path/to/a.py"` rather than a path. Every
+`git log` on that string returns zero commits, every pair lands under `THIN_HISTORY_FLOOR`, and the
+whole candidate set reports THIN-HISTORY — a clean, confident, entirely false "no hidden modules."
+If you want to keep the counts for ranking, write them to a second file; do not feed them onward.
 
 **`MAXF` is the load-bearing knob and 30 is not arbitrary** — it is the changeset cap the ROSE
 study used, and the one code-maat defaults to. Without it a single formatting sweep or license-
