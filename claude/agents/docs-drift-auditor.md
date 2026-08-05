@@ -13,8 +13,11 @@ description: >-
   still match install.sh"). Covers Python and shell / dotfiles / config repos.
   Does NOT edit files, run the repo's commands / examples / install scripts,
   audit skill or agent frontmatter quality (that is agent-skill-auditor's job),
-  or critique prose style — only whether following a doc would mislead a human or
-  Claude.
+  critique prose style, or judge whether the tree itself is well-organised (use
+  @architecture-auditor — this agent asks whether the prose matches the tree,
+  that one asks whether the tree is right) — only whether following a doc would
+  mislead a human or Claude. For the full four-family audit (duplication +
+  simplification + docs drift + architecture) use the code-health-audit skill.
 tools: Read, Grep, Glob, Bash, Write
 model: inherit
 maxTurns: 100

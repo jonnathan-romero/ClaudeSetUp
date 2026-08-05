@@ -13,15 +13,19 @@ description: >-
   "what can we delete", "find unused exports", "which functions are too
   complex", "are we reinventing the wheel", "is there a library that already
   does this", "what could a stdlib call replace", or before a cleanup sprint.
-  For the full three-family audit
-  (duplication + simplification + docs drift) use the code-health-audit skill. Covers any
+  For the full four-family audit
+  (duplication + simplification + docs drift + architecture) use the
+  code-health-audit skill. Covers any
   language lizard tokenizes (~29, incl. Python, JS/TS, Go, Rust, Java, C/C++,
   Ruby, Swift). Does NOT edit or refactor code, does NOT review a diff or the
   currently-changed files (that is code-simplifier / the built-in `/simplify`,
   both of which edit in place), does NOT hunt bugs (use /code-review), and does
   NOT find duplicated code or code reimplementing a helper that already exists
   INSIDE this repo (both are @duplication-auditor; third-party and stdlib
-  reinvention is this agent). Repo-wide, evidence-gated,
+  reinvention is this agent), and does NOT judge where files live, whether a
+  module should be split, or how a class hierarchy is shaped (use
+  @architecture-auditor — this agent measures functions, that one measures files
+  and modules). Repo-wide, evidence-gated,
   and report-only is the whole point.
 tools: Read, Grep, Glob, Bash, Write
 model: inherit

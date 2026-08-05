@@ -1,8 +1,8 @@
 ---
 name: code-health-audit
-description: Repo-wide health audit that orchestrates parallel auditor agents across three co-equal families - duplication, simplification, and documentation drift. ALWAYS trigger when the user wants a WHOLE-REPO audit spanning more than one family, rather than a diff review or a single-family ask - "code health audit", "audit the repo for code quality/health", "where is the tech debt", "what needs refactoring", "full audit of this repo", "find everything worth cleaning up", "duplication and dead code and doc drift" - or before a refactor, a cleanup sprint, or a release. Single-family phrasings ("find dead code", "DRY audit", "are the docs accurate") belong to the individual auditors - route there unless the ask spans families. Maps the repo with codebase-explorer scouts, runs the detectors once (jscpd, lizard, per-ecosystem linters), inventories the doc surface, applies each family's own evidence gate, fans out the three auditors, then merges into one ranked report. Read-only - proposes changes, never performs them. Do NOT use to review or simplify the current diff or recently-changed files (use /simplify or code-simplifier, which edit in place), or to hunt bugs (use /code-review). To actually FIX comments and log levels repo-wide rather than report on them, use the code-housekeeping skill - it edits, this one never does. For a small repo or one narrow question, invoke that family's auditor directly - this skill is the multi-agent orchestrator and it is deliberate overhead.
-argument-hint: "[path] [--duplication-only|--simplification-only|--docs-only]"
-allowed-tools: Agent, Read, Grep, Glob, Write, Bash(~/.claude/skills/code-health-audit/scripts/*), Bash(npx:*), Bash(uvx:*), Bash(cargo clippy:*), Bash(golangci-lint:*), Bash(git log:*), Bash(git ls-files:*)
+description: Repo-wide health audit that orchestrates parallel auditor agents across four co-equal families - duplication, simplification, documentation drift, and architecture. ALWAYS trigger when the user wants a WHOLE-REPO audit spanning more than one family, rather than a diff review or a single-family ask - "code health audit", "audit the repo for code quality/health", "where is the tech debt", "what needs refactoring", "full audit of this repo", "find everything worth cleaning up", "duplication and dead code and doc drift" - or before a refactor, a cleanup sprint, or a release. Single-family phrasings ("find dead code", "DRY audit", "are the docs accurate", "is this repo structured right") belong to the individual auditors - route there unless the ask spans families. Maps the repo with codebase-explorer scouts, runs the detectors once (jscpd, lizard, per-ecosystem linters, import graphs), inventories the doc surface, applies each family's own evidence gate, fans out the four auditors, then merges into one ranked report. Read-only - proposes changes, never performs them. Do NOT use to review or simplify the current diff or recently-changed files (use /simplify or code-simplifier, which edit in place), or to hunt bugs (use /code-review). To actually FIX comments and log levels repo-wide rather than report on them, use the code-housekeeping skill - it edits, this one never does. For a small repo or one narrow question, invoke that family's auditor directly - this skill is the multi-agent orchestrator and it is deliberate overhead.
+argument-hint: "[path] [--duplication-only|--simplification-only|--docs-only|--architecture-only]"
+allowed-tools: Agent, Read, Grep, Glob, Write, Bash(~/.claude/skills/code-health-audit/scripts/*), Bash(npx:*), Bash(uvx:*), Bash(uv run:*), Bash(go list:*), Bash(cargo clippy:*), Bash(golangci-lint:*), Bash(git log:*), Bash(git ls-files:*)
 ---
 
 # Repo health audit (orchestrated)
@@ -11,20 +11,26 @@ Fan out a repo-wide audit across parallel auditor agents, then merge their findi
 report. A single agent handles a small repo fine; this skill exists for the case where one context
 cannot hold the whole picture.
 
-**Three families, all first-class, all run together by default.** Run a subset only when the user
-asks for one (`--duplication-only` / `--simplification-only` / `--docs-only`) or when the repo has
-no surface for a family — and say which you ran either way:
+**Four families, all first-class, all run together by default.** Run a subset only when the user
+asks for one (`--duplication-only` / `--simplification-only` / `--docs-only` /
+`--architecture-only`) or when the repo has no surface for a family — and say which you ran either
+way:
 
 | Family | Hunts | Scan artifact | Agent |
 |---|---|---|---|
 | **Duplication** | Logic that exists in more than one place and should be consolidated | `jscpd` | `@duplication-auditor` |
 | **Simplification** | Complexity, deep nesting, long signatures, dead code, reinvented wheels | `lizard` + per-ecosystem linters | `@simplification-auditor` |
 | **Documentation drift** | Prose docs (README, CLAUDE.md, AGENTS.md, install scripts, docstrings, comments) that disagree with what the code actually does | doc-surface inventory (no mechanical detector exists) | `@docs-drift-auditor` |
+| **Architecture** | Where the code *lives* — module boundaries, file placement, folder layout, package encapsulation, module cohesion, class hierarchies | co-change matrix (language-agnostic) + per-ecosystem import graphs where they apply | `@architecture-auditor` |
 
 Docs drift belongs here and not in a separate pass: a doc that lies costs a human — or Claude — the
-same wasted work that duplicated and tangled code does, and the merge step is where the three
+same wasted work that duplicated and tangled code does, and the merge step is where the four
 families actually inform each other (a "delete this dead function" that the README documents is a
 different finding than either family produces alone).
+
+Architecture belongs here for the same reason and one more: it is the family whose findings the
+other three *create*. Every accepted extraction, deletion, and split moves code, and the question
+of whether the destination is right is not askable from inside the family that proposed the move.
 
 **Read-only.** Propose changes and where they belong. Never perform the refactor or the doc fix, and
 never let a spawned agent perform one either.
@@ -38,7 +44,7 @@ Every agent sees the whole repo. What is sharded is **what each one hunts for**,
 looks**. A user-supplied scope filters the *findings*; it does not partition what gets read.
 
 **Each family carries its own evidence gate, and no family inherits another's.** Metrics and
-detectors only nominate; the gate decides. The three gates are equal in standing and different in
+detectors only nominate; the gate decides. The four gates are equal in standing and different in
 kind:
 
 | Family | Gate | Why this one |
@@ -46,10 +52,22 @@ kind:
 | Duplication | **Git co-change** — the sites change together | Duplication that never co-changes is cheap to leave alone |
 | Simplification | **Churn / hotspot** — the code is actually edited | Complexity in code nobody edits costs nobody anything |
 | Documentation drift | **The verbatim quote pair** — the exact doc line *and* the exact code line it contradicts | The contradiction is present-tense and self-evidencing; it needs no history to be real |
+| Architecture | **An evidence tier** — a rule the repo declared, a mechanical breakage, cross-boundary co-change above the repo's own baseline, or a placement inconsistency | The metrics here are the weakest in the audit; nothing but the repo's own declarations, provable breakage, or its change history can vouch for a structural claim |
 
 The empirical work behind the first two is consistent: controlling for size and change count erases
 most of the effect attributed to static metrics, and high complexity scores predict nothing on their
 own. Default to silence there and make the survivors earn their place.
+
+**Architecture needs that discipline most, not least.** No study controlling for both file size and
+change count has found an architecture metric that survives; package cycles measured as null across
+1,252 projects, and the familiar fan-out limit of 7 traces to a memory-research result that showed
+no threshold effect when tested. So the architecture family never reports a score — it reports what
+the repo declared, what breaks, or what the history shows, and its tier labels travel into the
+merged report so a reader can see which is which. Two consequences bind the orchestrator: **a repo
+with no declared architecture caps that family at the mechanical tier** (there is no intended model
+to diverge from, and saying "wrong" without one is unfounded), and **never let that family's
+proposals come from clustering** — automated architecture recovery scores at or below 0.22 ARI
+against human-labelled ground truth, which cannot justify moving a file.
 
 **One concern inside the simplification family is exempt: reinvented wheels.** Code hand-rolling
 what the stdlib or a declared dependency already provides is wrong in its edge cases whether or not
@@ -94,11 +112,28 @@ resolve per agent wastes minutes for identical results.
 uvx lizard --csv -o <outdir>/lizard.csv <path>                         # per-function metrics
 ~/.claude/skills/code-health-audit/scripts/hotspot.sh '*' '24 months ago' > <outdir>/hotspots.tsv
 git ls-files '*.md' '*.rst' '*.txt' 'docs/*' > <outdir>/docs.txt       # prose surface inventory
+uvx ruff analyze graph <path> 2>/dev/null > <outdir>/imports.json      # Python import graph
 ```
 
 Then add the per-ecosystem detectors that apply to the languages actually present — `ruff` and
 `vulture` for Python, `knip` for JS/TS, `clippy` for Rust, `golangci-lint` for Go. Detect the
-languages from `git ls-files`; do not run a Python linter on a Go repo.
+languages from `git ls-files`; do not run a Python linter on a Go repo. For the architecture
+family's import graph, substitute `npx madge --circular --json` or `npx depcruise --no-config
+--output-type json` on a JS/TS repo and `go list -e -json ./...` on a Go repo; on a language with
+none of these, that family runs on git evidence alone and Coverage says so.
+
+**Also run the co-change nomination pass once here** — both `@architecture-auditor` and
+`@duplication-auditor` consume it, for opposite purposes, and it is far too expensive to compute
+twice. Use the one-pass `git log --no-merges --name-only` + awk co-occurrence sweep from the
+architecture auditor's body, capping changesets at 30 files so a single formatting sweep does not
+couple everything it touched, and write the ranked pairs to `<outdir>/cochange-candidates.tsv`.
+State the cap and the window in Coverage.
+
+**The architecture family also needs a non-scan input: the repo's declared architecture.** Collect
+`.importlinter` / `[tool.importlinter]`, `tach.toml`, `.dependency-cruiser.*`, boundary rules in
+`eslint.config.*`, `docs/adr/`, and any structural rule stated in `CLAUDE.md` / `AGENTS.md` /
+`README`. Quote what you find into the fan-out prompts verbatim — it is that family's top evidence
+tier, and its absence caps what the family may conclude.
 
 Adjust the `docs.txt` patterns to what the repo actually uses. That inventory scopes the *prose*
 surface only — docstrings and inline comments live in source and are the API-surface agent's
@@ -130,7 +165,7 @@ surface means one agent instead of three — never zero agents.
 ### 3. Fan out, in one message
 
 Collect the scouts' maps first — fan-out waits on both the maps and the scans. Then spawn every
-agent across all three families in a single message so they run concurrently. Give each one the
+agent across all four families in a single message so they run concurrently. Give each one the
 paths to the scan outputs **and the map file(s)**, the exclusion list, an explicit instruction not
 to re-run any detector, and **a unique output path** — `<outdir>/agents/<family>-<lens-or-batch>.md`.
 The agents default to one shared report path; concurrent writers on the default clobber each other
@@ -206,6 +241,33 @@ false negatives live:
   when *following the doc would mislead or break the reader*, not when the doc is merely less
   detailed than the code. Treating paraphrase as mismatch is this family's dominant false positive.
 
+**Architecture family — split by concern, never by directory.** Up to three agents:
+
+| Agent | Covers |
+|---|---|
+| `boundaries` | Declared-intent violations, import cycles (edges named, definition stated), and encapsulation breaches — imports reaching past what a package exposes |
+| `placement` | Where files live: cross-boundary co-change above the repo's own baseline (hidden modules), placement inconsistent with a file's folder-peers, and packaging traps |
+| `hierarchy` | Class hierarchies via `pylint`/`pyreverse`/mypy override rules, plus module-cohesion splits justified by consumer partitioning |
+
+Run the co-change nomination pass **once** for the whole audit and hand the candidate file to both
+the `placement` agent and `@duplication-auditor` — they read the same data for opposite purposes,
+and computing it twice wastes minutes for identical results. Give every architecture agent the
+declared intent found in step 1, quoted, because it sets their evidence ceiling. Drop `hierarchy`
+when the repo has no classes; drop `boundaries` when no import-graph detector applies to any
+language present, and say so in Coverage rather than letting the family look like it found nothing.
+
+Two rules go in every architecture agent's prompt, because they are where this family's false
+positives live:
+
+- **The gate reads backwards from duplication's.** Duplication runs co-change on files that *share
+  code*; architecture runs it on files that share none but sit across a boundary. Same script,
+  opposite meaning — there, COUPLED says extract; here, COUPLED says the boundary is misplaced.
+  Same-package pairs are exempt outright: their co-change is cohesion.
+- **Deliberate structure is not a finding.** Roughly a quarter of rejected findings in automated
+  review are correct observations about intentional decisions. Search for the rationale — a
+  comment, an ADR, a commit message, a config exemption — before writing anything, and ask rather
+  than assert when the structure looks deliberate but undocumented.
+
 ### 4. Merge — this is the real work
 
 Several agents produce overlapping findings. Without a real merge the user gets several reports to
@@ -242,16 +304,31 @@ finding whose file entry lacks spans cannot be deduped; count it separately and 
      filed under `## Already in the toolbox` (never under a duplication heading, which would
      re-surface the superseded extraction), carrying every site from the duplication finding, and
      say which proposal was superseded.
-   - *Drift the proposals themselves create.* Every accepted extraction, deletion, or signature
-     change invalidates any doc that describes it. Walk the accepted list against the docs family's
-     doc surface and name the doc updates each proposal implies. This is a report section, not an
-     afterthought.
+   - *Destination (duplication ↔ architecture).* Duplication proposes a home for extracted code
+     *inside the structure as it stands* — that is its hard rule, and it never asks whether the
+     structure is right. Architecture may have found that same destination misplaced. When both
+     fire, the duplication proposal is the **default** and architecture overrides it only at T1 or
+     T2; a T3 or T4 placement finding is not enough to redirect an extraction, and the honest merge
+     records the extraction with a note that its destination is itself under question.
+   - *Sequencing (architecture ↔ everything).* An accepted architecture move relocates code that
+     other families filed findings against, invalidating their line numbers. Order the report so
+     structural moves are the **last** thing a reader acts on, and say so — a team that moves the
+     module first has to re-run the audit to use the rest of it.
+   - *Corroboration (architecture ↔ duplication).* The same cross-boundary co-change data feeds
+     both families. When duplication finds two sites that co-change *and* architecture finds no
+     import edge between their modules, those agree: it is one hidden module, and the extraction and
+     the relocation are a single change. Merge into one entry rather than filing it twice.
+   - *Drift the proposals themselves create.* Every accepted extraction, deletion, signature change,
+     or file move invalidates any doc that describes it — and a move invalidates more than the
+     others, because paths appear in install scripts, CI config, and prose. Walk the accepted list
+     against the docs family's doc surface and name the doc updates each proposal implies. This is a
+     report section, not an afterthought.
 3. **Rank** by fix-worthiness. Within duplication and simplification: change-history evidence
    (co-change, relative churn) → actionability of the proposed step → blast radius → raw metric
    **last**. Span, occurrence count, and complexity score are what detectors sort by and the weakest
    predictors of whether a fix is worth making. Within docs: the auditor's own severity — Critical
    (acting on the doc produces a wrong outcome) → Warning → Suggestion — with confidence as the
-   tiebreak. Rank inside each family; do not force one scale across all three.
+   tiebreak. Rank inside each family; do not force one scale across all four — architecture ranks by evidence tier, which is not comparable to a docs severity or a churn ratio.
 4. **Cross-check rejections.** If one agent rejected what another accepted, resolve it explicitly
    rather than letting the accepting agent win by default.
 
@@ -280,29 +357,36 @@ plus the path. Never paste the full report inline, and never emit the per-agent 
 # Repo health audit — <repo/subtree>
 
 ## Coverage
-Detectors + flags + thresholds, and the doc-surface inventory. Files scanned /
-excluded. Agents spawned and what each covered. The funnel for ALL THREE
-families: N nominated → N gated in → N reported — a family that ran and found
-nothing says so explicitly, and a family that did not run says why.
-DEGRADED / UNGATED banners where they apply.
+Detectors + flags + thresholds, the doc-surface inventory, and the architecture
+family's declared intent (quoted, or an explicit "none found" with the tier cap
+that implies). Files scanned / excluded. Agents spawned and what each covered.
+The funnel for ALL FOUR families: N nominated → N gated in → N reported — a
+family that ran and found nothing says so explicitly, and a family that did not
+run says why. DEGRADED / UNGATED banners where they apply.
 
+## Declared rules the code breaks  <- architecture T1; the strongest finding in the
+                                   report, because the rule is the team's own
 ## Already solved elsewhere     <- duplication: the shared location already exists
 ## Already in the toolbox       <- reinvention: stdlib / declared dep already does it,
                                    Tier 1 (no new dep) before Tier 2 (asked as questions)
 ## Extract now                  <- duplication
 ## Simplify now                 <- complexity, each with a concrete next step
 ## Possibly unreachable         <- dead code, split into safe-to-delete vs is-this-a-defect
+## Structure worth changing     <- architecture T2-T4, tier label on every entry;
+                                   T4 stays phrased as a question, never an instruction
 ## Docs that no longer match     <- docs drift, Critical → Warning → Suggestion,
                                    each with its doc-quote + code-quote pair
 ## Doc updates the proposals imply  <- drift the accepted changes above would create
-## Considered and not reported  <- counts by reason, all three families; load-bearing,
+## Looks wrong, is actually fine  <- required; structures that trip every heuristic and
+                                   are correct anyway, and why. Empty means you didn't look
+## Considered and not reported  <- counts by reason, all four families; load-bearing,
                                    it makes the silence credible
 ```
 
 ## Standing rules
 
 - **A family is skipped only when the user asked or the repo has no surface for it, and Coverage
-  names it either way.** Three families run by default. Never silently drop one because its scan
+  names it either way.** Four families run by default. Never silently drop one because its scan
   produced no file, because it has no mechanical detector, or because the other two filled the
   report — a missing family is the failure mode this skill is built to prevent.
 - **No silent caps.** State every cap — clusters per agent, agent count, findings reported — with
@@ -312,8 +396,9 @@ DEGRADED / UNGATED banners where they apply.
   Neither you nor any spawned agent may estimate one. Docs findings quote both sides verbatim from
   the real files — never from memory or from what a file "probably" says.
 - **Rejecting most candidates is success.** Most duplication should stay duplicated, most
-  complexity is not worth touching, and most doc imprecision is legitimate paraphrase. The rejection
-  counts are what make the accepted list credible.
+  complexity is not worth touching, most doc imprecision is legitimate paraphrase, and most
+  structure that looks wrong is a deliberate trade-off. The rejection counts are what make the
+  accepted list credible.
 - **Never bundle a proposed simplification with a behavior change.** Refactors tangled with feature
   work are where the defect-injection signal actually lives. Propose pure, behavior-preserving
   changes only.
@@ -321,7 +406,14 @@ DEGRADED / UNGATED banners where they apply.
   Bug-prediction output that isn't actionable changes no behavior; this is measured, not
   theoretical. No next step, no entry.
 - **Propose placement inside the repo's existing structure.** The scout map documents that
-  structure — cite it. Never invent a `common/` in a repo with no such convention.
+  structure — cite it. Never invent a `common/` in a repo with no such convention. The one family
+  allowed to question the structure itself is architecture, and only from its top two evidence
+  tiers; every other family places code in the tree as it stands.
+- **A file move is the most expensive change in this report, so it is ranked last and carries its
+  own blast radius.** Anything relying on import-as-side-effect for registration breaks by simply
+  never happening, with nothing raising and CI staying green — ORM model registration, task-name
+  derivation, plugin discovery, and dotted paths inside config strings. No move ships without that
+  list, and no move is proposed as a single atomic commit.
 - **Every package name in the merged report traces to a lockfile entry or a registry probe.** Never
   to a spawned agent's recollection. A hallucinated package name that a reader installs is a
   supply-chain compromise, so an unverified name is dropped, not caveated.

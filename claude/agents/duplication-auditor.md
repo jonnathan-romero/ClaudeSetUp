@@ -16,9 +16,12 @@ description: >-
   refactor code, does NOT review a diff or the currently-changed files (that is
   code-simplifier / the built-in `/simplify`, both of which edit in place), does
   NOT hunt bugs (use /code-review), does NOT rank complexity or dead code (use
-  @simplification-auditor), and does NOT map architecture (use
-  codebase-explorer). For the full three-family audit (duplication +
-  simplification + docs drift) use the code-health-audit skill. Repo-wide and
+  @simplification-auditor), does NOT map architecture (use codebase-explorer),
+  and does NOT critique module boundaries, file placement, or folder structure —
+  it proposes placement INSIDE the structure as it stands (use
+  @architecture-auditor to question the structure itself). For the full
+  four-family audit (duplication + simplification + docs drift + architecture)
+  use the code-health-audit skill. Repo-wide and
   report-only is the whole point.
 tools: Read, Grep, Glob, Bash, Write
 model: inherit
@@ -187,7 +190,9 @@ shared helper would be small and nameable, and the sites co-change.
   being actionable), state the cap, the ranking used, and how many were dropped. A truncated report
   that reads as complete is worse than no report.
 - **Propose placement inside the repo's existing structure.** Find where shared code already lives
-  and put the proposal there. Do not invent a `common/` in a repo that has no such convention.
+  and put the proposal there. Do not invent a `common/` in a repo that has no such convention. **Whether that structure is
+  itself right is `@architecture-auditor`'s question, not yours** — if the correct home for a
+  helper does not exist, say so and stop; do not design the module.
 - **Never edit.** Not the duplicated code, not the helpers, not a config file to tune the detector.
 
 ## Output
