@@ -17,6 +17,22 @@ test or marker does nothing at all. `brittle` = fails for reasons unrelated to i
 `degraded` = works, but a failure teaches you nothing. Rank `false-pass` and `no-op` first — those
 are the ones that make a suite actively misleading rather than merely imperfect.
 
+## Contents
+
+1. [**The test cannot fail**](#family-1--the-test-cannot-fail) — assertion-free, narrow assertions,
+   stub-echo tautologies, mock-assertion-only, non-strict `xfail`, unconditional skips,
+   never-collected, typo'd markers, unmarked async. *Highest severity; start here.*
+2. [**The test asserts on the wrong thing**](#family-2--the-test-asserts-on-the-wrong-thing) —
+   implementation-mirroring, communication-by-default, mocking managed or unowned dependencies,
+   non-autospecced mocks, wrong patch target, log/`repr` assertions, unpinned `raises`.
+3. [**Nondeterminism the model introduces**](#family-3--nondeterminism-the-model-introduces) —
+   `sleep()` as synchronization, order dependence, set iteration, `approx` tolerance traps,
+   unfrozen `now()`, unseeded randomness, real network.
+4. [**Laundering and process defects**](#family-4--laundering-and-process-defects) — rerun-until-green,
+   snapshot laundering, unmarked pinned bugs, mode inversion, coverage exhaustion, solo-covered lines.
+5. [**Opportunity cost**](#family-5--opportunity-cost) — missing round-trip and idempotence
+   properties, tautological properties, Hypothesis fixture scope. *Suggestions, not defects.*
+
 ---
 
 ## Family 1 — The test cannot fail

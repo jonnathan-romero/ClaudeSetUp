@@ -1,27 +1,22 @@
 ---
 name: test-suite-auditor
 description: >-
-  Audits an existing Python/pytest suite repo-wide for tests that cannot fail,
-  assert on the wrong thing, or hide flakiness — assertion-free tests,
-  non-strict `xfail`, unconditional skips, tests declared but never collected,
-  stub-echo tautologies, mocks of things the repo does not own, order-dependent
-  tests, and code that is covered but never actually checked. Runs the real
-  detectors (an AST census, ruff `PT`, `pytest -ra`, `-n 4 --dist load`,
-  coverage contexts) and CONFIRMS a suspicion by sabotaging the code and proving
+  Audits an existing Python/pytest suite repo-wide for tests that CANNOT FAIL —
+  assertion-free tests, non-strict `xfail`, unconditional skips, tests declared
+  but never collected, tautologies that assert on their own mocks, patch targets
+  that patch nothing, order-dependent tests, and code that is covered but never
+  actually checked. Confirms each suspicion by sabotaging the source and proving
   the suite stays green, rather than reporting a lint hit as a defect.
   Invoke with @test-suite-auditor when the ask is repo-scale: "audit our tests",
   "are these tests any good", "find tests that don't actually test anything",
   "which tests would pass on broken code", "find flaky or order-dependent
   tests", "is our coverage real", "review the test suite before I trust it".
-  Read-only in the sense that MATTERS — it never modifies tracked source and
-  never rewrites a test — but it DOES execute the repo's test suite and briefly
-  sabotages a source file inside a checksum-verified restore, so it refuses to
-  run on a dirty tree.
+  It never edits a test or tracked source and never commits, but it DOES execute
+  the suite and briefly sabotage a source file inside a checksum-verified
+  restore, so it refuses to run on a dirty tree.
   Do NOT use to write or add tests for a module (that is the `write-tests`
-  skill), to fix or refactor the tests it finds, to debug one specific failing
-  test, to configure pytest/CI/coverage, or to hunt bugs in production code
-  (use /code-review). Python and pytest only — other languages are reported as
-  out of scope, never guessed at.
+  skill), to fix what it finds, to debug one specific failing test, or to
+  configure pytest/CI/coverage. Python and pytest only.
 tools: Read, Grep, Glob, Bash, Write
 model: inherit
 maxTurns: 250
