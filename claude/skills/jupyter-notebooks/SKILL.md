@@ -1,6 +1,6 @@
 ---
 name: jupyter-notebooks
-description: Creates, edits, executes, and converts Jupyter notebooks (.ipynb) — building valid notebooks from percent-format drafts, editing cells, setting cell metadata (papermill `parameters` tags, nbconvert hide tags, reveal.js slide types), running them headlessly, and exporting to HTML/PDF/slides/markdown with nbconvert. ALWAYS trigger when the user mentions a notebook, .ipynb, Jupyter, nbconvert, papermill, jupytext or nbstripout; asks to "make me a notebook", "add a cell", "run this notebook", "convert/export the notebook to HTML/PDF/slides", "strip the outputs", or "parameterize this notebook"; or names a .ipynb file. ALSO trigger proactively on multi-step exploratory analysis where a notebook is the better artifact — "explore this dataset", "do some EDA", "walk through this data step by step" — even when the user never says "notebook". Do NOT use for a single chart, figure, or plot (that is matplotlib-plot-style / dataviz — this skill governs the artifact, not how charts look), for searching inside .ipynb files (use file-search), or when the user asks for a script, module, CLI, or package code — those stay .py.
+description: Creates, edits, executes, and converts Jupyter notebooks (.ipynb) — valid notebooks from percent-format drafts, cell metadata (papermill `parameters` tags, nbconvert hide tags, slide types), headless runs, and HTML/PDF/slides/markdown export via nbconvert. ALWAYS trigger when the user mentions a notebook, .ipynb, Jupyter, nbconvert, papermill, jupytext or nbstripout; asks to "make me a notebook", "add a cell", "run this notebook", "convert/export the notebook to HTML/PDF/slides", "strip the outputs", or "parameterize this notebook"; or names a .ipynb file. ALSO trigger proactively on multi-step exploratory analysis where a notebook is the better artifact — "explore this dataset", "do some EDA", "walk through this data step by step" — even when the user never says "notebook". Do NOT use for a single chart, figure, or plot (use matplotlib-plot-style / dataviz), for searching inside .ipynb files (use file-search), or when the user asks for a script, module, CLI, or package code — those stay .py.
 ---
 
 # jupyter-notebooks
@@ -58,6 +58,8 @@ Structure the notebook to the conventions in [references/authoring.md](reference
 
 Defer to `matplotlib-plot-style` for every plotting decision — this skill governs the artifact, not how charts look.
 
+Ruff lints and formats `.ipynb` natively (on by default since 0.6.0) — `uv run --with ruff ruff format nb.ipynb` needs no plugin or conversion, and only rewrites cell `source`, so canonical bytes and cell ids survive. Notebook-specific lint ignores: [references/authoring.md](references/authoring.md).
+
 ## Editing an existing notebook
 
 `Read` the notebook, then `NotebookEdit` for cell source (it takes the `id` shown in the Read output). Use `NBTOOL meta <nb> --cell <index-or-id> --tags a,b --slide subslide` for metadata, and `NBTOOL clean <nb>` to strip outputs and execution counts.
@@ -86,7 +88,7 @@ Batch runs over a parameter sweep, CI gates, and notebook-as-test go to [referen
 | A working notebook to run yourself | Execute to prove it runs, then `NBTOOL clean` — clean diffs, no stale results |
 | No env access, or execution needs data/credentials that are absent | Deliver unexecuted, and say so explicitly rather than implying it was checked |
 
-The first time a notebook lands in a git repo, mention once that committed outputs bloat diffs and that `nbstripout` via pre-commit is the fix — then configure nothing. Its pre-commit mode rewrites the working copy, so an open notebook loses its outputs on commit; that is the user's call to make.
+The first time a notebook lands in a git repo, mention once that committed outputs bloat diffs and that `nbstripout` via pre-commit is the fix — then configure nothing. Its pre-commit mode rewrites the working copy, so an open notebook loses its outputs on commit; that is the user's call to make. The paste-ready pre-commit block, the git-filter alternative, and `nbdime` for structural notebook diffs are in [references/git.md](references/git.md).
 
 ## Exporting
 

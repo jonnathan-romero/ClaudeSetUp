@@ -63,7 +63,7 @@ env -u DISPLAY uv run --with "nbconvert[webpdf]==7.17.1" --with "playwright==1.6
 - `env -u DISPLAY` is load-bearing. With `DISPLAY` set, webpdf hangs and Chromium spikes to 100% CPU (nbconvert #2165, open since 2024, no maintainer reply). A silent hang is the worst possible failure here.
 - `--allow-chromium-download` shells out to `playwright install chromium` for you. Drop it on later runs. Chromium lands in `~/.cache/ms-playwright` (~281 MB), outside uv's ephemeral env, so it is once per machine — but **pin playwright**, because the browser build is keyed to the playwright version and an unpinned re-resolve downloads another copy.
 - nbconvert calls `chromium.launch()` with no `executable_path` or `channel`, so an already-installed Chrome or Brave **cannot** be reused.
-- Knobs: `--WebPDFExporter.paginate=False` for one long page, `--WebPDFExporter.page_render_timeout=3000` (ms, default 100) for JS-heavy output, `--disable-sandbox` in containers only.
+- Knobs: `--WebPDFExporter.paginate=False` for one long page, `--WebPDFExporter.page_render_timeout=3000` (ms, default 100) for JS-heavy output, `--WebPDFExporter.browser_args` (7.17.0+) for arbitrary Chromium flags, `--disable-sandbox` in containers only.
 
 Third option: export HTML and print from the browser. Fine for one-offs, not scriptable.
 

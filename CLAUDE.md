@@ -7,7 +7,7 @@ A dotfiles-style repository for Claude Code configuration. It stores the user's 
 ## Layout
 
 - `claude/` — source tree mirrored into `~/.claude/` (CLAUDE.md, settings.json, skills/, agents/, hooks/, statusline-command.sh)
-- `claude/hooks/` — hook scripts referenced by `settings.json` (e.g. `black-format.sh`, a PostToolUse hook that runs Black on edited `.py` files)
+- `claude/hooks/` — hook scripts referenced by `settings.json` (e.g. `ruff-format.sh`, a PostToolUse hook that runs `ruff format` on edited `.py`/`.pyi`/`.ipynb` files)
 - `claude/skills/_shared/` — helpers used by **more than one** skill, one folder per helper (e.g. `review_diff/review-diff.sh`). Not a skill: it has no `SKILL.md`, so Claude Code never loads it. Skills call these by absolute installed path (`~/.claude/skills/_shared/<helper>/<script>`). A helper used by exactly one skill stays in that skill's own folder.
 - `claude/README.md` — index of every agent and skill (tables) plus the planning-triad guide
 - `marketplaces.txt` — one `name=org/repo` per line

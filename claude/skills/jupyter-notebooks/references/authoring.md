@@ -9,7 +9,9 @@
 - [Structure conventions](#structure-conventions)
 - [Anti-patterns](#anti-patterns)
 - [Showing output in a cell](#showing-output-in-a-cell)
+- [Ruff on notebooks](#ruff-on-notebooks)
 - [jupytext](#jupytext)
+- [nb-cli](#nb-cli)
 
 ## Why nbformat and not raw JSON
 
@@ -91,8 +93,25 @@ From Rule et al., *Ten Simple Rules for Reproducible Research in Jupyter Noteboo
 - **`display()`** from `IPython.display` is needed for rich output mid-cell — two objects, or inside a loop or conditional. Import it explicitly so the code stays valid plain Python.
 - **`print()`** produces a plain-text stream output with no rich rendering. The project rule is `logging` over `print`; in a notebook that requires `logging.basicConfig(level=logging.INFO, force=True)` in the setup cell, because a fresh kernel's root logger has no handlers and sits at WARNING. Without it `logger.info()` is silently invisible while `logger.warning()` still appears via `logging.lastResort`.
 
+## Ruff on notebooks
+
+Ruff lints and formats `.ipynb` natively — on by default since 0.6.0, no plugin or conversion step: `ruff check nb.ipynb`, `ruff format nb.ipynb`, or point it at a directory. It rewrites only cell `source`, so canonical JSON bytes and cell ids survive (verified against an `nbtool.py`-built notebook).
+
+Notebook exemptions are built in: `E402` (imports-not-at-top) does not fire on `.ipynb` even when explicitly selected — verified — so imports after setup cells need no config. The one rule worth a per-file ignore is `T20` (flake8-print), in projects that enable it:
+
+```toml
+[tool.ruff.lint.per-file-ignores]
+"*.ipynb" = ["T20"]   # a notebook may print()
+```
+
+Nothing in Ruff's default rule set (`E4`/`E7`/`E9`/`F`) misfires on notebook idiom — an unconfigured project needs nothing.
+
 ## jupytext
 
 Not required by this skill — `nbtool.py` parses percent format directly, which avoids both the install and jupytext's id churn. Use jupytext when the artifact should genuinely *live* as a versioned text file.
 
 If you do: never run bare `jupytext --to ipynb` against a checked-in notebook. The text formats do not store cell ids, so nbformat regenerates random ones on every conversion (jupytext #735), and text formats do not carry outputs at all. Use the paired commands instead — `jupytext --set-formats ipynb,py notebook.ipynb` then `jupytext --sync`, or `jupytext --update --to notebook nb.py` — which preserve ids and outputs.
+
+## nb-cli
+
+Deliberately not adopted. `nb-cli` (Rust, announced on the Jupyter Blog 2026-05, "designed specifically for AI agents") overlaps `nbtool.py`, but `nbtool.py` is zero-install via uv, verified by execution on this setup — including cell-id stability across rebuilds — and covers everything this skill needs. nb-cli's claim that 30–40% of notebook JSON tokens are structural is its own marketing, unverified. Revisit only if `nbtool.py` becomes a maintenance burden.
