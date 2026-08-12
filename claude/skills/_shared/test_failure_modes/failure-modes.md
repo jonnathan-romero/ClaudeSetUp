@@ -19,19 +19,20 @@ are the ones that make a suite actively misleading rather than merely imperfect.
 
 ## Contents
 
-1. [**The test cannot fail**](#family-1--the-test-cannot-fail) — assertion-free, narrow assertions,
-   stub-echo tautologies, mock-assertion-only, non-strict `xfail`, unconditional skips,
-   never-collected, typo'd markers, unmarked async. *Highest severity; start here.*
+1. [**The test cannot fail**](#family-1--the-test-cannot-fail) — assertion-free, always-true
+   asserts, narrow assertions, stub-echo tautologies, mock-assertion-only, non-strict `xfail`,
+   unconditional skips, never-collected, typo'd markers, unmarked async. *Highest severity; start here.*
 2. [**The test asserts on the wrong thing**](#family-2--the-test-asserts-on-the-wrong-thing) —
    implementation-mirroring, communication-by-default, mocking managed or unowned dependencies,
    non-autospecced mocks, wrong patch target, log/`repr` assertions, unpinned `raises`.
 3. [**Nondeterminism the model introduces**](#family-3--nondeterminism-the-model-introduces) —
-   `sleep()` as synchronization, order dependence, set iteration, `approx` tolerance traps,
-   unfrozen `now()`, unseeded randomness, real network.
+   `sleep()` as synchronization, order dependence, manual global mutation, set iteration,
+   `approx` tolerance traps, unfrozen `now()`, unseeded randomness, real network.
 4. [**Laundering and process defects**](#family-4--laundering-and-process-defects) — rerun-until-green,
    snapshot laundering, unmarked pinned bugs, mode inversion, coverage exhaustion, solo-covered lines.
 5. [**Opportunity cost**](#family-5--opportunity-cost) — missing round-trip and idempotence
-   properties, tautological properties, Hypothesis fixture scope. *Suggestions, not defects.*
+   properties, fabricated golden values, tautological properties, Hypothesis fixture scope.
+   *Suggestions, not defects.*
 
 ---
 
@@ -47,6 +48,14 @@ wrong by 5× on repos with a custom idiom).
 **Not always a defect:** a `benchmark` fixture, a decorator that *is* the assertion, or a
 `catch_warnings` block under `filterwarnings = error` all assert invisibly. The census separates
 these into REVIEW.
+
+### always-true-assertion · `false-pass` · `[static]`
+`assert (x == y,)` — a stray trailing comma makes the condition a non-empty tuple, always truthy;
+`x == y` with the `assert` keyword missing entirely; `assert "should have raised"`.
+All three are unconditionally green, and the tuple variant is a classic reformat accident.
+**Check:** ruff `F631` (assert on non-empty tuple), `B015` (comparison with no `assert`),
+`PLW0129` (assert on a string literal). Exact and zero-cost. Do not conflate with `PT015`
+(`assert False`), which always *fails*.
 
 ### narrow-assertion-mutant-survives · `false-pass` · `[runtime]`
 `assert result is not None`, `len(out) > 0`, `isinstance(x, list)` — true of almost any
@@ -207,7 +216,9 @@ Several statements inside one `pytest.raises` block, so the wrong line may be th
 
 ## Family 3 — Nondeterminism the model introduces
 
-Passes locally, fails in CI, gets "fixed" with a rerun.
+Passes locally, fails in CI, gets "fixed" with a rerun. One triage rule for the whole family:
+a flake is not automatically a test defect — empirically 24% of flaky-test fixes modify the
+code under test, and 94% of those fix a real bug. A flaky test can be a bug report.
 
 ### sleep-as-synchronization · `flaky` · `[static]`
 `time.sleep()` / `asyncio.sleep()` to wait for a thread, subprocess, or server.
@@ -226,6 +237,13 @@ planted dependency **deterministically**, where a seed sweep needed 7 tries (see
 **Mandatory gate:** exclude tests marked `xdist_group` first, and if CI already runs
 `--dist loadgroup`/`loadfile`, treat that as the team *declaring* those tests may share state.
 
+### manual-global-mutation-without-restore · `flaky` · `[static]`
+`os.environ["KEY"] = ...`, `os.chdir(...)`, or a bare `setattr(module, ...)` in a test —
+nothing restores it, so the next test inherits the mutated state and the failure lands on the
+wrong test. `monkeypatch` undoes all of these automatically.
+**Check:** AST — assignment to `os.environ[...]`, `os.chdir(`, or `setattr(` on a module inside
+a test/fixture body with no `monkeypatch` in scope. High precision.
+
 ### set-iteration-order-assertion · `flaky` · `[static]`
 `assert list(some_set) == [...]`. Set order follows per-process-randomized string hashes.
 **Dict order IS guaranteed (insertion order) — never flag it.** Only sets and frozensets.
@@ -237,11 +255,12 @@ intervening `sorted()`.
 **Check:** AST — `Eq` against a float literal with no `pytest.approx`. High false-positive rate;
 report as review, not defect.
 
-### approx-abs-silently-drops-rel · `false-pass` · `[static]`
+### approx-abs-silently-drops-rel · `brittle`/`false-pass` · `[static]`
 `pytest.approx(expected, abs=1e-6)` believing it *tightens* the default.
 Specifying `abs` alone **disables `rel` entirely** — `approx` is a disjunction, not the additive
-formula on the same docs page (that one is `numpy.isclose`). The tolerance is now looser than
-intended, in the direction of passing.
+formula on the same docs page (that one is `numpy.isclose`). The direction depends on the
+expected value's magnitude: for large values the check becomes far *stricter* than intended
+(brittle false alarms); near zero it becomes *looser*, in the direction of passing.
 **Check:** AST — `approx` with `abs=` and no `rel=`. Exact predicate.
 
 ### nan-equality-assumption · `brittle` · `[static]`
@@ -340,6 +359,17 @@ examples because examples dominate their training data.
 A normalizer/sanitizer/migration tested only on fresh input, never on its own output. "Apply twice"
 is where double-escaping, double-prefixing, and re-migration bugs live.
 
+### fabricated-golden-value · `false-pass` · `[judgment]`
+When the correct output genuinely cannot be computed (a solver, a ranker, a numerical routine),
+inventing a plausible expected value and asserting it. The made-up oracle pins wrong behavior
+as correct, and the eventual fix reads as a regression.
+A metamorphic relation needs no ground truth: relate two *executions* instead of predicting one
+output — `sin(x) == sin(pi - x)`, `count(q) >= count(q + refinement)`; round-trip and
+idempotence are the common special cases. For nondeterministic output, relate with
+subset/bounds/ordering, never `==`.
+**Check:** none mechanical. A weak `[static]` smell: a magic literal as the expected value with
+no comment and no derivation.
+
 ### tautological-property · `false-pass` · `[judgment]`
 A `@given` property that restates the implementation inside the assertion. Passes for *any*
 implementation while looking like the most rigorous test in the file — **the LLM-specific
@@ -358,7 +388,9 @@ minimal case.
 
 ## Sources
 
-Empirical claims here trace to: Just et al. FSE 2014 (mutant/real-fault coupling); Petrović &
+Empirical claims here trace to: van Deursen, Moonen, van den Bergh & Kok, *Refactoring Test
+Code*, CWI SEN-R0119 / XP2001 (the original test-smell catalog, incl. Sensitive Equality —
+quoted from the primary PDF at ir.cwi.nl/pub/4324); Just et al. FSE 2014 (mutant/real-fault coupling); Petrović &
 Ivanković ICSE-SEIP 2018, ICSE 2021, and TSE 2021 (mutation at Google, arid nodes, coverage
 exhaustion); Luo et al. FSE 2014 (flaky-test root causes and the sleep/waitFor fix table); Micco
 2016 and Lam et al. ISSTA 2019 (industry flakiness rates); Alshahwan et al. 2024 (Meta TestGen-LLM
@@ -368,7 +400,5 @@ LLM-written suites); Hora & Robbes MSR 2026 (coding agents and mock prevalence);
 what you don't own); Feathers (characterization tests); plus pytest, coverage.py, Hypothesis, and
 mutmut primary documentation.
 
-Two honest caveats. The van Deursen test-smell names in common use (Assertion Roulette, Sensitive
-Equality) could not be sourced to a primary text during research and are used here as vocabulary,
-not as cited findings. And the most-cited "test smells cause flakiness" paper is **retracted** —
+One honest caveat. The most-cited "test smells cause flakiness" paper is **retracted** —
 smells are a comprehensibility signal, not a defect oracle, so state them weakly.

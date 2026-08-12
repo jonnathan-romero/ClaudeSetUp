@@ -40,6 +40,13 @@ intent, that is your source. This is exactly why LLM-written tests "capture the 
 behaviour rather than the expected one," and it is measurable: buggy input steers models into
 writing tests that validate the erroneous behavior.
 
+**When no oracle exists at all** — a solver, a ranker, a numerical routine whose correct output
+you cannot compute — do not invent a plausible golden value; a fabricated oracle pins wrong
+behavior as correct and makes the eventual fix look like a regression. Assert a *relation
+between two executions* instead, which needs no ground truth: `sin(x) == sin(pi - x)`,
+`count(q) >= count(q + refinement)`, round-trip, apply-twice. If the output is
+nondeterministic, relate with bounds or subset checks, never `==`.
+
 ### Legacy mode: how to get the expected value honestly
 
 Do **not** guess a plausible value and assert it. Do this instead:
@@ -131,7 +138,9 @@ the anomaly, not the norm.
 
 ## Verify — the tests must fail when the code breaks
 
-A green suite is not evidence. Prove detection mechanically, on 3–5 **load-bearing** statements of
+A green suite is not evidence — green on first write is also what a reverse-engineered
+assertion looks like, since test and code then agree by construction. Prove detection
+mechanically, on 3–5 **load-bearing** statements of
 the module — the ones carrying the behavior you claim to have tested:
 
 ```bash
@@ -205,7 +214,8 @@ Non-obvious facts that will otherwise cost you a run:
 
 **Triage each survivor; never chase a score.** Google abandoned the absolute mutation score as
 infeasible to compute and impossible to surface actionably, and Python has the *worst* mutant
-productivity of seven languages (70.6%) — expect junk. A survivor you decide not to kill gets a
+productivity of seven languages (only 70.6% of mutants are productive, vs Java's 87.2%) —
+expect junk. A survivor you decide not to kill gets a
 `# pragma: no mutate` with a one-line reason, so the suppression is visible in the diff.
 
 **Never kill a mutant by asserting on an implementation detail** — a log message, a preallocated

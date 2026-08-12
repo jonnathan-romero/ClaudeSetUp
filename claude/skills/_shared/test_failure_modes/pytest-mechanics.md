@@ -85,7 +85,10 @@ Any hit here is worth reporting individually. The genuinely load-bearing ones:
 
 Also worth keeping, low-volume and genuine: **PT014** (a literally duplicated parametrize case),
 **PT015** (`assert False`), **PT017** (`try/except` + assert instead of `pytest.raises` — the test
-**passes when nothing raises**), plus `B011` and `B017` from flake8-bugbear.
+**passes when nothing raises**), plus `B011` and `B017` from flake8-bugbear, and the always-*true*
+assertion shapes — **F631** (`assert (cond,)`, a trailing-comma tuple), **B015** (comparison with
+the `assert` keyword missing), **PLW0129** (`assert "msg"`). All three are unconditionally green
+and exactly detectable; do not conflate them with PT015, which always fails.
 
 ### Report as an aggregate count, never as individual defects
 
@@ -138,6 +141,11 @@ sabotage scripts in `_shared/` exist because nothing off the shelf does this.
 - **Fixture scope.** A `session`/`module`-scoped fixture returning a mutable object shares it
   across every test that requests it. Under `pytest-xdist`, session fixtures run **once per
   worker**, not once per run.
+- **Fixture shadowing is silent.** A same-named fixture in a nearer conftest or test module
+  overrides the parent's with no warning — tests in that directory run against a different
+  fixture than their siblings. `pytest --fixtures-per-test` shows which definition each test
+  actually received. A deliberate override requests the base fixture by the same name; one
+  that doesn't is suspect.
 - **Teardown is skipped on setup failure.** Code after `yield` never runs if the setup half raised.
 - **`parametrize` values are not copied.** "Parameter values are passed as-is to tests (no copy
   whatsoever)" — a mutable param is shared across every case.
@@ -179,8 +187,9 @@ Everything through step 5 costs less than ten suite-runs. Runtimes measured on r
 **`-ra` is what surfaces the never-runs.** Without it a permanently-skipped test is one character
 in a progress bar; with it you get `SKIPPED [1] ...: unconditional skip` and `XPASS ...` by name.
 
-**A single random seed proves nothing** — in a planted-defect fixture, seeds 1/2/3/7 caught it,
-**seed 42 was completely clean**, and 99/12345 caught it. Sweep or don't bother. Prefer
+**A single random seed proves nothing** — in a planted-defect fixture only 2 of 7 seeds
+(99, 12345) exposed the order dependence; seeds 1/2/3/7 caught only an unrelated flake, and
+**seed 42 was completely clean**. Sweep or don't bother. Prefer
 `-n 4 --dist load`, which caught the same defect on the first try; never use `--dist loadfile` or
 `loadgroup` for this, since they exist to keep coupled tests together.
 
